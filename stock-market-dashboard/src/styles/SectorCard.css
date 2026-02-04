@@ -1,0 +1,54 @@
+/* src/styles/SectorCard.css */
+.sector-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #eee;
+}
+
+.sector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.sector-name {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+  color: #2c3e50;
+}
+
+.sector-performance {
+  font-size: 1.3em;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.sector-performance.positive {
+  background-color: #e6f7ee;
+  color: #00b36b;
+}
+
+.sector-performance.negative {
+  background-color: #fce8e6;
+  color: #ff4d4f;
+}
+
+.top-stocks h3 {
+  margin: 0 0 16px 0;
+  color: #34495e;
+  font-size: 1.2em;
+}
+
+.stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}

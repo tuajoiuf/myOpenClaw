@@ -1,0 +1,76 @@
+/* src/styles/StockCard.css */
+.stock-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: box-shadow 0.3s ease;
+  background: white;
+}
+
+.stock-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.stock-header {
+  margin-bottom: 12px;
+}
+
+.stock-symbol {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+.stock-name {
+  font-size: 0.9em;
+  color: #666;
+  margin: 4px 0 0 0;
+}
+
+.stock-price-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.price {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #333;
+}
+
+.change {
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.change.positive {
+  background-color: #e6f7ee;
+  color: #00b36b;
+}
+
+.change.negative {
+  background-color: #fce8e6;
+  color: #ff4d4f;
+}
+
+.stock-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  font-size: 0.85em;
+  color: #888;
+}
+
+.positive {
+  border-left: 4px solid #00b36b;
+}
+
+.negative {
+  border-left: 4px solid #ff4d4f;
+}
