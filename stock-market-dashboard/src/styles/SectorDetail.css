@@ -260,4 +260,59 @@
   .sector-detail {
     padding: 20px;
   }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .stat-card p {
+    font-size: 1.5em;
+  }
+  
+  .sector-performance {
+    font-size: 1.4em;
+    min-width: 120px;
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .sector-header {
+    padding: 20px;
+    gap: 15px;
+  }
+  
+  .sector-header h1 {
+    font-size: 1.6em;
+  }
+  
+  .sector-performance {
+    font-size: 1.2em;
+    min-width: 100px;
+    padding: 10px 15px;
+  }
+  
+  .top-stocks-section, .all-stocks-section {
+    padding: 20px;
+  }
+  
+  .top-stocks-section h2, .all-stocks-section h2 {
+    font-size: 1.4em;
+  }
+  
+  .all-stocks-grid {
+    gap: 15px;
+  }
+  
+  .mini-stock-card {
+    padding: 15px;
+  }
+  
+  .sector-stats {
+    gap: 15px;
+  }
+  
+  .stat-card {
+    padding: 18px;
+  }
 }

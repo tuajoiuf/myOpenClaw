@@ -162,4 +162,50 @@
   .price {
     font-size: 1.6em;
   }
+  
+  .stock-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .stock-price-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .change {
+    min-width: auto;
+    padding: 6px 12px;
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 576px) {
+  .stock-card {
+    padding: 15px;
+  }
+  
+  .stock-symbol {
+    font-size: 1.2em;
+  }
+  
+  .price {
+    font-size: 1.4em;
+  }
+  
+  .stock-details {
+    grid-template-columns: 1fr !important;
+    font-size: 0.85em;
+  }
+  
+  .volume, .market-cap, .pe-ratio {
+    padding: 5px;
+  }
+  
+  .change {
+    padding: 5px 10px;
+    font-size: 0.9em;
+  }
 }

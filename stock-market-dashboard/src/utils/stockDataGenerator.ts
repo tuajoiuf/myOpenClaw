@@ -1,7 +1,7 @@
 // src/utils/stockDataGenerator.ts
 
 import { Sector, Stock } from '../types/StockTypes';
-import { fetchSectorData, StockData } from '../services/stockApi';
+import { fetchSectorData, fetchCNSectorData, fetchUSSectorData, StockData } from '../services/stockApi';
 
 // 将API返回的数据转换为应用内部类型
 const mapApiToInternal = (apiStock: StockData): Stock => {
@@ -9,6 +9,7 @@ const mapApiToInternal = (apiStock: StockData): Stock => {
     symbol: apiStock.symbol,
     name: apiStock.name,
     chineseName: apiStock.chineseName,
+    market: apiStock.market,
     price: apiStock.price,
     change: apiStock.change,
     changePercent: apiStock.changePercent,
@@ -19,15 +20,16 @@ const mapApiToInternal = (apiStock: StockData): Stock => {
 };
 
 // 从真实API获取股票数据生成器
-export const generateMockStock = (symbol: string, name: string): Stock => {
+export const generateMockStock = (symbol: string, name: string, market: 'CN' | 'US' = 'CN'): Stock => {
   // 这个函数现在主要用于兼容现有代码，实际数据来自API
-  const basePrice = 10 + Math.random() * 100;
+  const basePrice = market === 'CN' ? (10 + Math.random() * 100) : (20 + Math.random() * 300);
   const changePercent = (Math.random() - 0.5) * 0.2; // ±10%的变动
   const change = basePrice * changePercent;
 
   return {
     symbol,
     name,
+    market,
     price: parseFloat(basePrice.toFixed(2)),
     change: parseFloat(change.toFixed(2)),
     changePercent: parseFloat((changePercent * 100).toFixed(2)),
@@ -41,7 +43,9 @@ export const generateMockStock = (symbol: string, name: string): Stock => {
 export const generateMockSectors = async (): Promise<Sector[]> => {
   try {
     // 从API获取真实数据
-    const apiSectors = await fetchSectorData();
+    const cnSectors = await fetchCNSectorData();
+    const usSectors = await fetchUSSectorData();
+    const apiSectors = [...cnSectors, ...usSectors];
     
     return apiSectors.map(apiSector => {
       // 按涨跌幅排序，取前3只股票
@@ -55,6 +59,7 @@ export const generateMockSectors = async (): Promise<Sector[]> => {
       
       return {
         name: apiSector.name,
+        market: apiSector.market,
         performance: parseFloat(avgChange.toFixed(2)),
         topStocks: sortedStocks
       };
@@ -69,21 +74,21 @@ export const generateMockSectors = async (): Promise<Sector[]> => {
 // 回退到模拟数据的函数
 const generateFallbackSectors = (): Sector[] => {
   const sectors = [
-    { name: '科技', stocks: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META', 'NFLX'] },
-    { name: '金融', stocks: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS', 'AXP', 'BK'] },
-    { name: '医疗保健', stocks: ['JNJ', 'PFE', 'MRK', 'ABT', 'ABBV', 'UNH', 'CVS', 'MDT'] },
-    { name: '消费品', stocks: ['KO', 'PEP', 'PG', 'CL', 'UL', 'ELF', 'TGT', 'WMT'] },
-    { name: '工业', stocks: ['BA', 'CAT', 'HON', 'MMM', 'GD', 'LMT', 'RTX', 'UPS'] },
-    { name: '能源', stocks: ['XOM', 'CVX', 'RDS-A', 'RDS-B', 'PTR', 'BHP', 'LIN', 'NEE'] },
-    { name: '房地产', stocks: ['AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'DLR', 'O', 'SBAC'] },
-    { name: '公用事业', stocks: ['NEE', 'DUK', 'SO', 'D', 'EXC', 'PCG', 'XEL', 'SRE'] },
-    { name: '材料', stocks: ['LIN', 'SHW', 'ECL', 'DOW', 'NEM', 'APD', 'PPG', 'VMC'] },
-    { name: '通信服务', stocks: ['GOOGL', 'META', 'AMZN', 'DIS', 'CMCSA', 'T', 'VZ', 'CHTR'] }
+    // 中国A股板块
+    { name: '科技', stocks: ['sz300750', 'sz300014', 'sz300498', 'sz300033', 'sh688008', 'sh688111'], market: 'CN' },
+    { name: '金融', stocks: ['sh601318', 'sh601328', 'sh601398', 'sh601939', 'sh601288', 'sh601818'], market: 'CN' },
+    { name: '医疗保健', stocks: ['sz000538', 'sz002422', 'sh600276', 'sh600519', 'sh603259', 'sh600196'], market: 'CN' },
+    { name: '消费', stocks: ['sz000858', 'sh600519', 'sh600887', 'sh600298', 'sh600600', 'sh600885'], market: 'CN' },
+    // 美股板块
+    { name: 'Technology', stocks: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA'], market: 'US' },
+    { name: 'Financials', stocks: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS'], market: 'US' },
+    { name: 'Healthcare', stocks: ['JNJ', 'PFE', 'MRK', 'ABT', 'ABBV', 'UNH'], market: 'US' },
+    { name: 'Consumer Cyclical', stocks: ['AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'DIS'], market: 'US' }
   ];
 
   return sectors.map(sector => {
     const stocks = sector.stocks.map((symbol, index) => 
-      generateMockStock(symbol, `${sector.name}公司${index + 1}`)
+      generateMockStock(symbol, `${sector.name}公司${index + 1}`, sector.market)
     );
     
     // 计算板块表现（取前3只股票的平均变化）
@@ -92,6 +97,7 @@ const generateFallbackSectors = (): Sector[] => {
     
     return {
       name: sector.name,
+      market: sector.market,
       performance: parseFloat(avgChange.toFixed(2)),
       topStocks: top3
     };

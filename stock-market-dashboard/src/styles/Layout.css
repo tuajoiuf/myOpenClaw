@@ -179,6 +179,21 @@
     padding: 1.2rem 1.5rem;
   }
   
+  .nav-brand {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .nav-brand a {
+    font-size: 1.5rem;
+  }
+  
+  .nav-links-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
   .nav-links {
     gap: 1.2rem;
     flex-wrap: wrap;
@@ -194,11 +209,45 @@
     padding: 6px 10px;
   }
   
+  .market-switcher {
+    order: -1; /* 将市场切换按钮移到导航链接之前 */
+    margin-bottom: 10px;
+    justify-content: center;
+  }
+  
   .main-content {
     padding: 1.5rem 1rem;
   }
+}
+
+@media (max-width: 576px) {
+  .navbar {
+    padding: 1rem 1rem;
+    gap: 1rem;
+  }
   
   .nav-brand a {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+  }
+  
+  .market-switcher {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .market-btn {
+    width: 100%;
+    margin: 2px 0;
+  }
+  
+  .nav-links {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .footer {
+    padding: 1rem;
+    font-size: 0.9em;
   }
 }

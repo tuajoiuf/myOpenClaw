@@ -15,6 +15,9 @@ const StockCard: React.FC<StockCardProps> = ({ stock }) => {
       <div className="stock-header">
         <h3 className="stock-symbol">{stock.symbol}</h3>
         <p className="stock-name">{stock.chineseName || stock.name}</p>
+        <div className={`market-tag ${stock.market.toLowerCase()}`}>
+          {stock.market === 'CN' ? 'A股' : '美股'}
+        </div>
       </div>
       
       <div className="stock-price-info">

@@ -137,4 +137,40 @@
   .stocks-grid {
     grid-template-columns: 1fr;
   }
+  
+  .sector-name {
+    font-size: 1.5em;
+  }
+  
+  .sector-performance {
+    font-size: 1.2em;
+  }
+}
+
+@media (max-width: 576px) {
+  .sector-card {
+    padding: 16px;
+  }
+  
+  .sector-header {
+    gap: 12px;
+  }
+  
+  .sector-name {
+    font-size: 1.3em;
+  }
+  
+  .sector-performance {
+    font-size: 1.1em;
+    min-width: 100px;
+    padding: 8px 16px;
+  }
+  
+  .top-stocks h3 {
+    font-size: 1.2em;
+  }
+  
+  .stocks-grid {
+    gap: 15px;
+  }
 }

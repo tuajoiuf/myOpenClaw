@@ -18,6 +18,9 @@ const SectorCard: React.FC<SectorCardProps> = ({ sector }) => {
         <div className={`sector-performance ${isPositive ? 'positive' : 'negative'}`}>
           {isPositive ? '+' : ''}{sector.performance}%
         </div>
+        <div className={`market-tag ${sector.market.toLowerCase()}`}>
+          {sector.market === 'CN' ? 'A股' : '美股'}
+        </div>
       </div>
       
       <div className="top-stocks">

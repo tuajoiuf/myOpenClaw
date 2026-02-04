@@ -5,6 +5,7 @@ export interface StockData {
   symbol: string;
   name: string;
   chineseName?: string; // 中文名称
+  market: 'CN' | 'US'; // 市场标识：CN为中国A股，US为美股
   price: number;
   change: number;
   changePercent: number;
@@ -19,11 +20,12 @@ export interface StockData {
 
 export interface SectorData {
   name: string;
+  market: 'CN' | 'US'; // 市场标识
   stocks: StockData[];
 }
 
-// 模拟板块和股票代码映射
-const SECTOR_STOCKS: Record<string, string[]> = {
+// 模拟板块和股票代码映射 - 分为中国市场和美国市场
+const CN_SECTOR_STOCKS: Record<string, string[]> = {
   '科技': ['sz300750', 'sz300014', 'sz300498', 'sz300033', 'sh688008', 'sh688111'],
   '金融': ['sh601318', 'sh601328', 'sh601398', 'sh601939', 'sh601288', 'sh601818'],
   '医疗保健': ['sz000538', 'sz002422', 'sh600276', 'sh600519', 'sh603259', 'sh600196'],
@@ -36,10 +38,23 @@ const SECTOR_STOCKS: Record<string, string[]> = {
   '通信服务': ['sh600030', 'sh600050', 'sh600718', 'sh600941', 'sz000063', 'sz000034']
 };
 
+const US_SECTOR_STOCKS: Record<string, string[]> = {
+  'Technology': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META', 'AVGO'],
+  'Financials': ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS', 'AXP', 'BLK'],
+  'Healthcare': ['JNJ', 'PFE', 'MRK', 'ABT', 'ABBV', 'UNH', 'CVS', 'MDT'],
+  'Consumer Cyclical': ['AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'DIS', 'SBUX', 'TGT'],
+  'Industrials': ['BA', 'CAT', 'HON', 'MMM', 'GD', 'LMT', 'RTX', 'UPS'],
+  'Energy': ['XOM', 'CVX', 'RDS-A', 'RDS-B', 'PTR', 'BHP', 'LIN', 'NEE'],
+  'Real Estate': ['AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'DLR', 'O', 'SBAC'],
+  'Utilities': ['NEE', 'DUK', 'SO', 'D', 'EXC', 'PCG', 'XEL', 'SRE'],
+  'Materials': ['LIN', 'SHW', 'ECL', 'DOW', 'NEM', 'APD', 'PPG', 'VMC'],
+  'Communication Services': ['GOOGL', 'META', 'AMZN', 'DIS', 'CMCSA', 'T', 'VZ', 'CHTR']
+};
+
 /**
  * 将腾讯财经返回的数据解析为StockData对象
  */
-export const parseStockData = (dataString: string): StockData | null => {
+export const parseStockData = (dataString: string, symbol: string): StockData | null => {
   try {
     const fields = dataString.split(',');
     
@@ -64,9 +79,10 @@ export const parseStockData = (dataString: string): StockData | null => {
     const changePercent = preClose ? ((change / preClose) * 100) : 0;
     
     return {
-      symbol: '', // 股票代码会在调用处补充
+      symbol: symbol,
       name,
       chineseName: name, // 腾讯财经API通常直接返回中文名称
+      market: symbol.startsWith('sh') || symbol.startsWith('sz') ? 'CN' : 'US',
       price: current,
       change,
       changePercent: parseFloat(changePercent.toFixed(2)),
@@ -85,7 +101,7 @@ export const parseStockData = (dataString: string): StockData | null => {
 /**
  * 从腾讯财经API获取股票数据（通过代理）
  */
-export const fetchStockData = async (symbols: string[]): Promise<StockData[]> => {
+export const fetchStockData = async (symbols: string[], market: 'CN' | 'US' = 'CN'): Promise<StockData[]> => {
   if (!symbols || symbols.length === 0) {
     return [];
   }
@@ -120,10 +136,9 @@ export const fetchStockData = async (symbols: string[]): Promise<StockData[]> =>
         
         if (startIndex > 0 && endIndex > startIndex) {
           const dataString = line.substring(startIndex, endIndex);
-          const stock = parseStockData(dataString);
+          const stock = parseStockData(dataString, symbol);
           
           if (stock) {
-            stock.symbol = symbol; // 补充股票代码
             stocks.push(stock);
           }
         }
@@ -134,21 +149,55 @@ export const fetchStockData = async (symbols: string[]): Promise<StockData[]> =>
   } catch (error) {
     console.error('Error fetching stock data:', error);
     // 如果API调用失败，返回模拟数据
-    return getMockStockData(symbols);
+    return getMockStockData(symbols, market);
   }
 };
 
 /**
- * 获取板块数据
+ * 获取中美两国市场板块数据
  */
-export const fetchSectorData = async (): Promise<SectorData[]> => {
+export const fetchAllSectors = async (): Promise<SectorData[]> => {
   const sectors: SectorData[] = [];
   
-  for (const [sectorName, stockSymbols] of Object.entries(SECTOR_STOCKS)) {
-    const stocks = await fetchStockData(stockSymbols);
+  // 获取中国市场板块数据
+  for (const [sectorName, stockSymbols] of Object.entries(CN_SECTOR_STOCKS)) {
+    const stocks = await fetchStockData(stockSymbols, 'CN');
     
     sectors.push({
       name: sectorName,
+      market: 'CN',
+      stocks
+    });
+  }
+  
+  // 获取美国市场板块数据
+  for (const [sectorName, stockSymbols] of Object.entries(US_SECTOR_STOCKS)) {
+    const stocks = await fetchStockData(stockSymbols, 'US');
+    
+    sectors.push({
+      name: sectorName,
+      market: 'US',
+      stocks
+    });
+  }
+  
+  return sectors;
+};
+
+/**
+ * 获取指定市场板块数据
+ */
+export const fetchSectorsByMarket = async (market: 'CN' | 'US'): Promise<SectorData[]> => {
+  const sectors: SectorData[] = [];
+  
+  const sectorStocks = market === 'CN' ? CN_SECTOR_STOCKS : US_SECTOR_STOCKS;
+  
+  for (const [sectorName, stockSymbols] of Object.entries(sectorStocks)) {
+    const stocks = await fetchStockData(stockSymbols, market);
+    
+    sectors.push({
+      name: sectorName,
+      market: market,
       stocks
     });
   }
@@ -179,6 +228,8 @@ export const fetchEastMoneySectorData = async (): Promise<SectorData[]> => {
         return {
           symbol: item.f12 || '',
           name: item.f14 || '',
+          chineseName: item.f14 || '',
+          market: 'CN',
           price: parseFloat(item.f2) || 0,
           change: parseFloat(item.f4) || 0,
           changePercent: parseFloat(item.f3) || 0,
@@ -197,6 +248,7 @@ export const fetchEastMoneySectorData = async (): Promise<SectorData[]> => {
       
       return Object.entries(sectorsMap).map(([name, stocks]) => ({
         name,
+        market: 'CN',
         stocks
       }));
     }
@@ -211,15 +263,17 @@ export const fetchEastMoneySectorData = async (): Promise<SectorData[]> => {
 /**
  * 获取模拟数据（当真实API不可用时使用）
  */
-const getMockStockData = (symbols: string[]): StockData[] => {
+const getMockStockData = (symbols: string[], market: 'CN' | 'US'): StockData[] => {
   return symbols.map((symbol, index) => {
-    const basePrice = 10 + Math.random() * 100;
-    const changePercent = (Math.random() - 0.5) * 0.2; // ±10%的变动
+    const basePrice = market === 'CN' ? (10 + Math.random() * 100) : (20 + Math.random() * 300);
+    const changePercent = (Math.random() - 0.5) * 0.1; // ±5%的变动
     const change = basePrice * changePercent;
     
     return {
       symbol,
-      name: `股票${index + 1}`,
+      name: market === 'CN' ? `股票${index + 1}` : `Stock${index + 1}`,
+      chineseName: market === 'CN' ? `股票${index + 1}` : undefined,
+      market,
       price: parseFloat(basePrice.toFixed(2)),
       change: parseFloat(change.toFixed(2)),
       changePercent: parseFloat((changePercent * 100).toFixed(2)),
