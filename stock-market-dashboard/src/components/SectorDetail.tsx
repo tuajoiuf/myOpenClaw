@@ -67,7 +67,7 @@ const SectorDetail: React.FC = () => {
             .find(s => s.name === decodeURIComponent(sectorName || ''))?.topStocks
             .map((stock, index) => (
               <div key={index} className="mini-stock-card">
-                <span className="symbol">{stock.symbol}</span>
+                <span className="symbol">{stock.chineseName || stock.symbol}</span>
                 <span className="price">${stock.price.toFixed(2)}</span>
                 <span className={`change ${stock.change >= 0 ? 'positive' : 'negative'}`}>
                   {stock.change >= 0 ? '+' : ''}{stock.changePercent}%

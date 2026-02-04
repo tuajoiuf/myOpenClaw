@@ -14,7 +14,7 @@ const StockCard: React.FC<StockCardProps> = ({ stock }) => {
     <div className={`stock-card ${isPositive ? 'positive' : 'negative'}`}>
       <div className="stock-header">
         <h3 className="stock-symbol">{stock.symbol}</h3>
-        <p className="stock-name">{stock.name}</p>
+        <p className="stock-name">{stock.chineseName || stock.name}</p>
       </div>
       
       <div className="stock-price-info">

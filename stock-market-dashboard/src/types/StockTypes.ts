@@ -1,6 +1,7 @@
 export interface Stock {
   symbol: string;
   name: string;
+  chineseName?: string; // 中文名称
   price: number;
   change: number;
   changePercent: number;

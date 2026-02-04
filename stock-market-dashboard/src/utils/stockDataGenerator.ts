@@ -8,6 +8,7 @@ const mapApiToInternal = (apiStock: StockData): Stock => {
   return {
     symbol: apiStock.symbol,
     name: apiStock.name,
+    chineseName: apiStock.chineseName,
     price: apiStock.price,
     change: apiStock.change,
     changePercent: apiStock.changePercent,

@@ -1,5 +1,26 @@
+@import url('./styles/global.css');
+
 .App {
   text-align: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+  color: var(--text-primary);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 添加科技感粒子背景效果 */
+.App::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 20%);
+  z-index: -1;
 }
 
 .App-logo {
@@ -14,7 +35,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: transparent;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

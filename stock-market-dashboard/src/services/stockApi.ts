@@ -4,6 +4,7 @@
 export interface StockData {
   symbol: string;
   name: string;
+  chineseName?: string; // 中文名称
   price: number;
   change: number;
   changePercent: number;
@@ -47,7 +48,7 @@ export const parseStockData = (dataString: string): StockData | null => {
       return null;
     }
     
-    const name = fields[0]; // 股票名称
+    const name = fields[0]; // 股票名称（通常是中文名）
     const open = parseFloat(fields[1]); // 开盘价
     const preClose = parseFloat(fields[2]); // 昨收价
     const current = parseFloat(fields[3]); // 当前价
@@ -65,6 +66,7 @@ export const parseStockData = (dataString: string): StockData | null => {
     return {
       symbol: '', // 股票代码会在调用处补充
       name,
+      chineseName: name, // 腾讯财经API通常直接返回中文名称
       price: current,
       change,
       changePercent: parseFloat(changePercent.toFixed(2)),
