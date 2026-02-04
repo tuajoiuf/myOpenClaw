@@ -1,0 +1,17 @@
+
+> stock-market-dashboard@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Failed to compile.
+
+TS2339: Property 'marketCap' does not exist on type 'StockData'.
+    13 |     changePercent: apiStock.changePercent,
+    14 |     volume: apiStock.volume,
+  > 15 |     marketCap: apiStock.marketCap,
+       |                         ^^^^^^^^^
+    16 |     peRatio: apiStock.peRatio
+    17 |   };
+    18 | };
+
+

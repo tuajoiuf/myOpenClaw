@@ -51,6 +51,18 @@ body {
   gap: 25px;
 }
 
+.sector-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sector-link:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
 .loading {
   text-align: center;
   font-size: 1.2em;

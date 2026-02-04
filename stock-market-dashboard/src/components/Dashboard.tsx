@@ -3,17 +3,33 @@ import React, { useState, useEffect } from 'react';
 import { Sector } from '../types/StockTypes';
 import { generateMockSectors, updateStockData } from '../utils/stockDataGenerator';
 import SectorCard from './SectorCard';
+import { Link } from 'react-router-dom';
 import '../styles/Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [error, setError] = useState<string | null>(null);
 
   // 初始化数据
   useEffect(() => {
-    setSectors(generateMockSectors());
-    setIsLoading(false);
+    const fetchData = async () => {
+      try {
+        const sectorsData = await generateMockSectors(); // 这个函数现在会从API获取真实数据
+        setSectors(sectorsData);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error fetching sector data:', err);
+        setError('获取数据失败，正在使用模拟数据...');
+        // 即使出错也尝试加载回退数据
+        const fallbackSectors = await generateMockSectors();
+        setSectors(fallbackSectors);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
 
     // 设置定时器模拟实时数据更新
     const interval = setInterval(() => {
@@ -45,6 +61,10 @@ const Dashboard: React.FC = () => {
     return <div className="loading">加载市场数据中...</div>;
   }
 
+  if (error) {
+    return <div className="error">错误: {error}</div>;
+  }
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
@@ -57,7 +77,9 @@ const Dashboard: React.FC = () => {
       
       <div className="sectors-container">
         {sectors.map((sector, index) => (
-          <SectorCard key={index} sector={sector} />
+          <Link to={`/sectors/${encodeURIComponent(sector.name)}`} key={index} className="sector-link">
+            <SectorCard key={index} sector={sector} />
+          </Link>
         ))}
       </div>
     </div>

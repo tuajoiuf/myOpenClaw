@@ -1,13 +1,29 @@
 // src/utils/stockDataGenerator.ts
 
 import { Sector, Stock } from '../types/StockTypes';
+import { fetchSectorData, StockData } from '../services/stockApi';
 
-// 模拟股票数据生成器
+// 将API返回的数据转换为应用内部类型
+const mapApiToInternal = (apiStock: StockData): Stock => {
+  return {
+    symbol: apiStock.symbol,
+    name: apiStock.name,
+    price: apiStock.price,
+    change: apiStock.change,
+    changePercent: apiStock.changePercent,
+    volume: apiStock.volume,
+    marketCap: apiStock.marketCap || 0,
+    peRatio: apiStock.peRatio || 0
+  };
+};
+
+// 从真实API获取股票数据生成器
 export const generateMockStock = (symbol: string, name: string): Stock => {
-  const basePrice = Math.random() * 200 + 50; // 价格范围 50-250
-  const changePercent = (Math.random() - 0.5) * 0.2; // 变化范围 ±10%
+  // 这个函数现在主要用于兼容现有代码，实际数据来自API
+  const basePrice = 10 + Math.random() * 100;
+  const changePercent = (Math.random() - 0.5) * 0.2; // ±10%的变动
   const change = basePrice * changePercent;
-  
+
   return {
     symbol,
     name,
@@ -20,8 +36,37 @@ export const generateMockStock = (symbol: string, name: string): Stock => {
   };
 };
 
-// 模拟板块数据生成器
-export const generateMockSectors = (): Sector[] => {
+// 从真实API获取板块数据生成器
+export const generateMockSectors = async (): Promise<Sector[]> => {
+  try {
+    // 从API获取真实数据
+    const apiSectors = await fetchSectorData();
+    
+    return apiSectors.map(apiSector => {
+      // 按涨跌幅排序，取前3只股票
+      const sortedStocks = [...apiSector.stocks]
+        .sort((a, b) => b.changePercent - a.changePercent)
+        .slice(0, 3)
+        .map(mapApiToInternal);
+      
+      // 计算板块整体表现（前3只股票的平均涨跌幅）
+      const avgChange = sortedStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sortedStocks.length;
+      
+      return {
+        name: apiSector.name,
+        performance: parseFloat(avgChange.toFixed(2)),
+        topStocks: sortedStocks
+      };
+    });
+  } catch (error) {
+    console.error('Error generating sectors from API:', error);
+    // 如果API调用失败，回退到原始的模拟数据
+    return generateFallbackSectors();
+  }
+};
+
+// 回退到模拟数据的函数
+const generateFallbackSectors = (): Sector[] => {
   const sectors = [
     { name: '科技', stocks: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META', 'NFLX'] },
     { name: '金融', stocks: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS', 'AXP', 'BK'] },
