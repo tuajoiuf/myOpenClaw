@@ -54,7 +54,7 @@ const US_SECTOR_STOCKS: Record<string, string[]> = {
 /**
  * 将腾讯财经返回的数据解析为StockData对象
  */
-export const parseStockData = (dataString: string, symbol: string): StockData | null => {
+export const parseStockData = (dataString: string, market: 'CN' | 'US' = 'CN'): StockData | null => {
   try {
     const fields = dataString.split(',');
     
@@ -79,10 +79,10 @@ export const parseStockData = (dataString: string, symbol: string): StockData | 
     const changePercent = preClose ? ((change / preClose) * 100) : 0;
     
     return {
-      symbol: symbol,
+      symbol: '', // 股票代码会在调用处补充
       name,
       chineseName: name, // 腾讯财经API通常直接返回中文名称
-      market: symbol.startsWith('sh') || symbol.startsWith('sz') ? 'CN' : 'US',
+      market,
       price: current,
       change,
       changePercent: parseFloat(changePercent.toFixed(2)),
@@ -99,9 +99,41 @@ export const parseStockData = (dataString: string, symbol: string): StockData | 
 };
 
 /**
- * 从腾讯财经API获取股票数据（通过代理）
+ * 解析美股数据（从Alpha Vantage或其他API获取的数据格式）
  */
-export const fetchStockData = async (symbols: string[], market: 'CN' | 'US' = 'CN'): Promise<StockData[]> => {
+export const parseUSStockData = (data: any): StockData | null => {
+  try {
+    // 这里是一个示例，实际实现可能需要根据具体API格式调整
+    const symbol = data['01. symbol'] || data.symbol || '';
+    const price = parseFloat(data['05. price'] || data.price || data.close || 0);
+    const previousClose = parseFloat(data['08. previous close'] || data.previousClose || 0);
+    
+    const change = price - previousClose;
+    const changePercent = previousClose ? ((change / previousClose) * 100) : 0;
+    
+    return {
+      symbol,
+      name: data.name || data['02. name'] || symbol,
+      market: 'US',
+      price,
+      change,
+      changePercent: parseFloat(changePercent.toFixed(2)),
+      volume: parseInt(data['06. volume'] || data.volume || 0),
+      preClose: previousClose,
+      open: parseFloat(data['02. open'] || data.open || 0),
+      high: parseFloat(data['03. high'] || data.high || 0),
+      low: parseFloat(data['04. low'] || data.low || 0)
+    };
+  } catch (error) {
+    console.error('Error parsing US stock data:', error);
+    return null;
+  }
+};
+
+/**
+ * 从腾讯财经API获取中国A股数据（通过代理）
+ */
+export const fetchCNStockData = async (symbols: string[]): Promise<StockData[]> => {
   if (!symbols || symbols.length === 0) {
     return [];
   }
@@ -136,9 +168,10 @@ export const fetchStockData = async (symbols: string[], market: 'CN' | 'US' = 'C
         
         if (startIndex > 0 && endIndex > startIndex) {
           const dataString = line.substring(startIndex, endIndex);
-          const stock = parseStockData(dataString, symbol);
-          
+          const stock = parseStockData(dataString, 'CN'); // 指定为中国市场
+        
           if (stock) {
+            stock.symbol = symbol; // 补充股票代码
             stocks.push(stock);
           }
         }
@@ -147,21 +180,71 @@ export const fetchStockData = async (symbols: string[], market: 'CN' | 'US' = 'C
     
     return stocks;
   } catch (error) {
-    console.error('Error fetching stock data:', error);
+    console.error('Error fetching CN stock data:', error);
     // 如果API调用失败，返回模拟数据
-    return getMockStockData(symbols, market);
+    return getMockStockData(symbols, 'CN');
   }
 };
 
 /**
- * 获取中美两国市场板块数据
+ * 获取美股数据（模拟实现，实际应用中需要连接美股API）
  */
-export const fetchAllSectors = async (): Promise<SectorData[]> => {
+export const fetchUSStockData = async (symbols: string[]): Promise<StockData[]> => {
+  if (!symbols || symbols.length === 0) {
+    return [];
+  }
+  
+  try {
+    // 这里是模拟实现，实际应用中应连接美股API如Alpha Vantage, IEX Cloud等
+    // 为了演示目的，我们将创建模拟数据
+    const stocks: StockData[] = [];
+    
+    for (const symbol of symbols) {
+      // 模拟从美股API获取数据
+      const mockData = {
+        '01. symbol': symbol,
+        '02. name': `${symbol} Company`,
+        '05. price': (Math.random() * 300 + 50).toFixed(2), // 随机价格在50-350之间
+        '08. previous close': (Math.random() * 300 + 50).toFixed(2),
+        '06. volume': Math.floor(Math.random() * 10000000).toString(),
+        '02. open': (Math.random() * 300 + 50).toFixed(2),
+        '03. high': (Math.random() * 300 + 50).toFixed(2),
+        '04. low': (Math.random() * 300 + 50).toFixed(2)
+      };
+      
+      const stock = parseUSStockData(mockData);
+      if (stock) {
+        stocks.push(stock);
+      }
+    }
+    
+    return stocks;
+  } catch (error) {
+    console.error('Error fetching US stock data:', error);
+    // 如果API调用失败，返回模拟数据
+    return getMockStockData(symbols, 'US');
+  }
+};
+
+/**
+ * 获取指定市场的股票数据
+ */
+export const fetchStockData = async (symbols: string[], market: 'CN' | 'US' = 'CN'): Promise<StockData[]> => {
+  if (market === 'CN') {
+    return fetchCNStockData(symbols);
+  } else {
+    return fetchUSStockData(symbols);
+  }
+};
+
+/**
+ * 获取中国A股板块数据
+ */
+export const fetchCNSectorData = async (): Promise<SectorData[]> => {
   const sectors: SectorData[] = [];
   
-  // 获取中国市场板块数据
   for (const [sectorName, stockSymbols] of Object.entries(CN_SECTOR_STOCKS)) {
-    const stocks = await fetchStockData(stockSymbols, 'CN');
+    const stocks = await fetchCNStockData(stockSymbols);
     
     sectors.push({
       name: sectorName,
@@ -170,9 +253,17 @@ export const fetchAllSectors = async (): Promise<SectorData[]> => {
     });
   }
   
-  // 获取美国市场板块数据
+  return sectors;
+};
+
+/**
+ * 获取美股板块数据
+ */
+export const fetchUSSectorData = async (): Promise<SectorData[]> => {
+  const sectors: SectorData[] = [];
+  
   for (const [sectorName, stockSymbols] of Object.entries(US_SECTOR_STOCKS)) {
-    const stocks = await fetchStockData(stockSymbols, 'US');
+    const stocks = await fetchUSStockData(stockSymbols);
     
     sectors.push({
       name: sectorName,
@@ -185,24 +276,13 @@ export const fetchAllSectors = async (): Promise<SectorData[]> => {
 };
 
 /**
- * 获取指定市场板块数据
+ * 获取所有市场的板块数据
  */
-export const fetchSectorsByMarket = async (market: 'CN' | 'US'): Promise<SectorData[]> => {
-  const sectors: SectorData[] = [];
+export const fetchSectorData = async (): Promise<SectorData[]> => {
+  const cnSectors = await fetchCNSectorData();
+  const usSectors = await fetchUSSectorData();
   
-  const sectorStocks = market === 'CN' ? CN_SECTOR_STOCKS : US_SECTOR_STOCKS;
-  
-  for (const [sectorName, stockSymbols] of Object.entries(sectorStocks)) {
-    const stocks = await fetchStockData(stockSymbols, market);
-    
-    sectors.push({
-      name: sectorName,
-      market: market,
-      stocks
-    });
-  }
-  
-  return sectors;
+  return [...cnSectors, ...usSectors];
 };
 
 /**
@@ -224,20 +304,17 @@ export const fetchEastMoneySectorData = async (): Promise<SectorData[]> => {
     const data = await response.json();
     
     if (data && data.data && data.data.diff) {
-      const stocks = data.data.diff.map((item: any) => {
-        return {
-          symbol: item.f12 || '',
-          name: item.f14 || '',
-          chineseName: item.f14 || '',
-          market: 'CN',
-          price: parseFloat(item.f2) || 0,
-          change: parseFloat(item.f4) || 0,
-          changePercent: parseFloat(item.f3) || 0,
-          volume: parseInt(item.f5) || 0,
-          marketCap: parseFloat(item.f20) || 0,
-          peRatio: parseFloat(item.f9) || 0
-        };
-      });
+      const stocks = data.data.diff.map((item: any) => ({
+        symbol: item.f12 || '',
+        name: item.f14 || '',
+        market: 'CN',
+        price: parseFloat(item.f2) || 0,
+        change: parseFloat(item.f4) || 0,
+        changePercent: parseFloat(item.f3) || 0,
+        volume: parseInt(item.f5) || 0,
+        marketCap: parseFloat(item.f20) || 0,
+        peRatio: parseFloat(item.f9) || 0
+      }));
 
       // 按行业分组
       const sectorsMap: Record<string, StockData[]> = {};
@@ -285,3 +362,6 @@ const getMockStockData = (symbols: string[], market: 'CN' | 'US'): StockData[] =
     };
   });
 };
+
+// 为了向后兼容，导出原来的函数名
+export { fetchSectorData as fetchSectorDataOld };
