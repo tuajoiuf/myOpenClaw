@@ -21,7 +21,7 @@ const SectorDetail: React.FC = () => {
     // 转换数据格式
     const formattedSectors = sectorsData.map(apiSector => {
       // 按涨跌幅排序，取前3只股票
-      const sortedStocks = [...apiSector.stocks]
+      const sortedStocks = [...apiSector.topStocks]
         .sort((a, b) => b.changePercent - a.changePercent)
         .slice(0, 3)
         .map(stock => ({

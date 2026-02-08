@@ -1,6 +1,6 @@
 // src/services/stockApi.ts
-import { StockData, SectorData } from '../types/StockTypes';
-import { getMockStockData, getMockSectorData } from '../utils/stockDataGenerator';
+import { Stock, Sector, StockData, SectorData } from '../types/StockTypes';
+import { generateMockStock, updateStockData } from '../utils/stockDataGenerator';
 
 // 缓存机制
 const CACHE_DURATION = 30000; // 30秒缓存
@@ -119,7 +119,9 @@ export const fetchCNStockData = async (symbols: string[]): Promise<StockData[]> 
   }
 
   console.error('All API sources failed for CN stock data, returning mock data');
-  const mockData = getMockStockData(symbols, 'CN');
+  const mockData = symbols.map(symbol => 
+    generateMockStock(symbol, `${symbol}公司`, 'CN')
+  );
   setCachedData(cacheKey, mockData); // 缓存模拟数据作为降级方案
   return mockData;
 };
@@ -188,12 +190,65 @@ export const fetchCNSectorData = async (): Promise<SectorData[]> => {
 
   try {
     // 由于真实API可能受限，这里返回模拟数据，但在实际实现中会调用真实API
-    const mockSectors = getMockSectorData('CN');
+    const mockSectors: SectorData[] = [
+      {
+        name: '科技',
+        market: 'CN',
+        performance: 2.5,
+        topStocks: [
+          generateMockStock('sz300750', '宁德时代', 'CN'),
+          generateMockStock('sz300498', '润佳股份', 'CN'),
+          generateMockStock('sz300033', '同花顺', 'CN')
+        ]
+      },
+      {
+        name: '金融',
+        market: 'CN',
+        performance: 1.8,
+        topStocks: [
+          generateMockStock('sh601318', '中国平安', 'CN'),
+          generateMockStock('sh601328', '交通银行', 'CN'),
+          generateMockStock('sh601398', '工商银行', 'CN')
+        ]
+      },
+      {
+        name: '医疗保健',
+        market: 'CN',
+        performance: -0.5,
+        topStocks: [
+          generateMockStock('sz000538', '漓江股份', 'CN'),
+          generateMockStock('sz002422', '科伦药业', 'CN'),
+          generateMockStock('sh600276', '恒瑞医药', 'CN')
+        ]
+      },
+      {
+        name: '消费',
+        market: 'CN',
+        performance: 1.2,
+        topStocks: [
+          generateMockStock('sz000858', '五粮液', 'CN'),
+          generateMockStock('sh600519', '贵州茅台', 'CN'),
+          generateMockStock('sh600887', '伊利股份', 'CN')
+        ]
+      }
+    ];
     setCachedData(cacheKey, mockSectors);
     return mockSectors;
   } catch (error) {
     console.error('Error fetching CN sector data:', error);
-    const fallbackData = getMockSectorData('CN');
+    // 返回模拟数据
+    const fallbackData: SectorData[] = [
+      {
+        name: '科技',
+        market: 'CN',
+        performance: 2.5,
+        topStocks: [
+          generateMockStock('sz300750', '宁德时代', 'CN'),
+          generateMockStock('sz300498', '润佳股份', 'CN'),
+          generateMockStock('sz300033', '同花顺', 'CN')
+        ]
+      }
+    ];
     setCachedData(cacheKey, fallbackData);
     return fallbackData;
   }
@@ -216,14 +271,23 @@ export const fetchUSStockData = async (symbols: string[]): Promise<StockData[]> 
 
   try {
     // 由于雅虎财经API限制较多，这里使用模拟数据作为主要来源，但保留API调用结构
-    const mockData = getMockStockData(symbols, 'US');
-    setCachedData(cacheKey, mockData);
-    return mockData;
+    const mockStocks = [
+      generateMockStock('AAPL', '苹果公司', 'US'),
+      generateMockStock('MSFT', '微软', 'US'),
+      generateMockStock('GOOGL', '谷歌', 'US'),
+      generateMockStock('AMZN', '亚马逊', 'US'),
+      generateMockStock('NVDA', '英伟达', 'US'),
+      generateMockStock('TSLA', '特斯拉', 'US')
+    ];
+    setCachedData(cacheKey, mockStocks);
+    return mockStocks;
   } catch (error) {
     console.error('Error fetching US stock data:', error);
-    const fallbackData = getMockStockData(symbols, 'US');
-    setCachedData(cacheKey, fallbackData);
-    return fallbackData;
+    const fallbackStocks = symbols.map(symbol => 
+      generateMockStock(symbol, `${symbol}公司`, 'US')
+    );
+    setCachedData(cacheKey, fallbackStocks);
+    return fallbackStocks;
   }
 };
 
@@ -240,12 +304,64 @@ export const fetchUSSectorData = async (): Promise<SectorData[]> => {
 
   try {
     // 返回模拟数据
-    const mockSectors = getMockSectorData('US');
-    setCachedData(cacheKey, mockSectors);
-    return mockSectors;
+    const mockUSSectors: SectorData[] = [
+      {
+        name: 'Technology',
+        market: 'US',
+        performance: 3.2,
+        topStocks: [
+          generateMockStock('AAPL', '苹果公司', 'US'),
+          generateMockStock('MSFT', '微软', 'US'),
+          generateMockStock('NVDA', '英伟达', 'US')
+        ]
+      },
+      {
+        name: 'Financials',
+        market: 'US',
+        performance: 1.5,
+        topStocks: [
+          generateMockStock('JPM', '摩根大通', 'US'),
+          generateMockStock('BAC', '美国银行', 'US'),
+          generateMockStock('WFC', '富国银行', 'US')
+        ]
+      },
+      {
+        name: 'Healthcare',
+        market: 'US',
+        performance: 0.8,
+        topStocks: [
+          generateMockStock('JNJ', '强生', 'US'),
+          generateMockStock('PFE', '辉瑞', 'US'),
+          generateMockStock('MRK', '默克', 'US')
+        ]
+      },
+      {
+        name: 'Consumer Cyclical',
+        market: 'US',
+        performance: 2.1,
+        topStocks: [
+          generateMockStock('AMZN', '亚马逊', 'US'),
+          generateMockStock('TSLA', '特斯拉', 'US'),
+          generateMockStock('HD', '家得宝', 'US')
+        ]
+      }
+    ];
+    setCachedData(cacheKey, mockUSSectors);
+    return mockUSSectors;
   } catch (error) {
     console.error('Error fetching US sector data:', error);
-    const fallbackData = getMockSectorData('US');
+    const fallbackData = [
+      {
+        name: 'Technology',
+        market: 'US' as const,
+        performance: 3.2,
+        topStocks: [
+          generateMockStock('AAPL', '苹果公司', 'US'),
+          generateMockStock('MSFT', '微软', 'US'),
+          generateMockStock('NVDA', '英伟达', 'US')
+        ]
+      }
+    ];
     setCachedData(cacheKey, fallbackData);
     return fallbackData;
   }
@@ -288,9 +404,27 @@ export const fetchAllSectors = async (): Promise<SectorData[]> => {
   } catch (error) {
     console.error('Error fetching all sectors:', error);
     // 返回模拟数据作为最后的备选方案
-    const fallbackData = [
-      ...getMockSectorData('CN'),
-      ...getMockSectorData('US')
+    const fallbackData: SectorData[] = [
+      {
+        name: '科技',
+        market: 'CN',
+        performance: 2.5,
+        topStocks: [
+          generateMockStock('sz300750', '宁德时代', 'CN'),
+          generateMockStock('sz300498', '润佳股份', 'CN'),
+          generateMockStock('sz300033', '同花顺', 'CN')
+        ]
+      },
+      {
+        name: 'Technology',
+        market: 'US',
+        performance: 3.2,
+        topStocks: [
+          generateMockStock('AAPL', '苹果公司', 'US'),
+          generateMockStock('MSFT', '微软', 'US'),
+          generateMockStock('NVDA', '英伟达', 'US')
+        ]
+      }
     ];
     setCachedData(cacheKey, fallbackData);
     return fallbackData;

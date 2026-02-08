@@ -1,21 +1,21 @@
 // src/utils/stockDataGenerator.ts
 
-import { Sector, Stock } from '../types/StockTypes';
-import { fetchSectorData, fetchCNSectorData, fetchUSSectorData, StockData } from '../services/stockApi';
+import { Sector, Stock, SectorData } from '../types/StockTypes';
+import { fetchCNSectorData, fetchUSSectorData } from '../services/stockApi';
 
 // 将API返回的数据转换为应用内部类型
-const mapApiToInternal = (apiStock: StockData): Stock => {
+const mapApiToInternal = (apiStock: SectorData): Stock => {
   return {
-    symbol: apiStock.symbol,
-    name: apiStock.name,
-    chineseName: apiStock.chineseName,
+    symbol: apiStock.topStocks[0]?.symbol || '',
+    name: apiStock.topStocks[0]?.name || apiStock.name,
+    chineseName: apiStock.topStocks[0]?.chineseName,
     market: apiStock.market,
-    price: apiStock.price,
-    change: apiStock.change,
-    changePercent: apiStock.changePercent,
-    volume: apiStock.volume,
-    marketCap: apiStock.marketCap || 0,
-    peRatio: apiStock.peRatio || 0
+    price: apiStock.topStocks[0]?.price || 0,
+    change: apiStock.topStocks[0]?.change || 0,
+    changePercent: apiStock.topStocks[0]?.changePercent || 0,
+    volume: apiStock.topStocks[0]?.volume || 0,
+    marketCap: apiStock.topStocks[0]?.marketCap || 0,
+    peRatio: apiStock.topStocks[0]?.peRatio || 0
   };
 };
 
@@ -49,10 +49,9 @@ export const generateMockSectors = async (): Promise<Sector[]> => {
     
     return apiSectors.map(apiSector => {
       // 按涨跌幅排序，取前3只股票
-      const sortedStocks = [...apiSector.stocks]
+      const sortedStocks = [...apiSector.topStocks]
         .sort((a, b) => b.changePercent - a.changePercent)
-        .slice(0, 3)
-        .map(mapApiToInternal);
+        .slice(0, 3);
       
       // 计算板块整体表现（前3只股票的平均涨跌幅）
       const avgChange = sortedStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sortedStocks.length;

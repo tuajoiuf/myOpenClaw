@@ -1,39 +1,235 @@
 {
-  "skills": [
+  "sddVersion": "1.0.0",
+  "projectName": "Stock Market Dashboard",
+  "projectVersion": "1.4.0",
+  "lastUpdated": "2026-02-08",
+  
+  "designPrinciples": [
     {
+      "principle": "Separation of Concerns",
+      "description": "Separate data, view, and business logic into distinct layers",
+      "implementation": "Skills architecture with clear interfaces"
+    },
+    {
+      "principle": "Single Responsibility",
+      "description": "Each skill has a single, well-defined responsibility",
+      "implementation": "Modular skill design with focused functionality"
+    },
+    {
+      "principle": "Dependency Inversion",
+      "description": "Depend on abstractions, not concretions",
+      "implementation": "Interface-based skill definitions"
+    },
+    {
+      "principle": "Error Resilience",
+      "description": "Graceful degradation under failure conditions",
+      "implementation": "Multi-source fallback and caching strategies"
+    }
+  ],
+
+  "skills": {
+    "stock-api-manager": {
       "id": "stock-api-manager",
       "name": "Stock API Manager",
       "version": "1.0.0",
-      "description": "Handles stock data fetching from multiple sources",
-      "path": "skills/stock-api-manager",
-      "dependencies": []
+      "description": "Handles stock data fetching from multiple sources with intelligent routing, caching, and error handling",
+      "category": "data",
+      "priority": "P0",
+      "dependencies": ["stock-data-cache", "stock-error-handler"],
+      "interfaces": [
+        "fetchCNStockData",
+        "fetchUSStockData", 
+        "fetchAllSectors",
+        "clearCache",
+        "healthCheck"
+      ],
+      "configuration": {
+        "apiSources": {
+          "sina": {
+            "url": "https://hq.sinajs.cn",
+            "priority": 1,
+            "timeout": 10000
+          },
+          "eastmoney": {
+            "url": "https://push2.eastmoney.com",
+            "priority": 2,
+            "timeout": 10000
+          }
+        },
+        "cache": {
+          "ttl": 30000,
+          "maxSize": 100
+        },
+        "retry": {
+          "maxAttempts": 3,
+          "backoffMs": 1000
+        }
+      },
+      "metrics": {
+        "apiLatency": true,
+        "successRate": true,
+        "cacheHitRate": true
+      }
     },
-    {
+
+    "stock-data-cache": {
       "id": "stock-data-cache",
       "name": "Stock Data Cache",
       "version": "1.0.0",
-      "description": "Intelligent caching for stock data",
-      "path": "skills/stock-data-cache",
-      "dependencies": []
+      "description": "Implements intelligent caching for stock data with TTL, LRU eviction, and metrics",
+      "category": "infrastructure",
+      "priority": "P1",
+      "dependencies": [],
+      "interfaces": [
+        "get",
+        "set",
+        "has",
+        "delete",
+        "clear",
+        "getStats"
+      ],
+      "configuration": {
+        "defaultTTL": 30000,
+        "maxSize": 100,
+        "evictionPolicy": "LRU"
+      },
+      "metrics": {
+        "hitRate": true,
+        "missRate": true,
+        "size": true
+      }
     },
-    {
+
+    "stock-error-handler": {
       "id": "stock-error-handler",
       "name": "Stock Error Handler",
       "version": "1.0.0",
-      "description": "Comprehensive error handling with fallback",
-      "path": "skills/stock-error-handler",
-      "dependencies": []
+      "description": "Comprehensive error handling with categorization, logging, and fallback strategies",
+      "category": "resilience",
+      "priority": "P0",
+      "dependencies": [],
+      "interfaces": [
+        "handle",
+        "log",
+        "fallback",
+        "getStats"
+      ],
+      "configuration": {
+        "fallbackEnabled": true,
+        "maxRetries": 3,
+        "retryDelay": 1000,
+        "errorCategories": [
+          "API_FORBIDDEN",
+          "API_TIMEOUT",
+          "NETWORK_ERROR",
+          "PARSE_ERROR",
+          "TYPE_ERROR"
+        ]
+      },
+      "metrics": {
+        "errorRate": true,
+        "fallbackUsage": true,
+        "retryCount": true
+      }
     },
-    {
+
+    "ui-responsive-adapter": {
       "id": "ui-responsive-adapter",
       "name": "UI Responsive Adapter",
       "version": "1.0.0",
-      "description": "Responsive design for H5 and PC",
-      "path": "skills/ui-responsive-adapter",
-      "dependencies": []
+      "description": "Handles responsive design for H5 and PC platforms with adaptive layouts",
+      "category": "presentation",
+      "priority": "P1",
+      "dependencies": [],
+      "interfaces": [
+        "adaptToMobile",
+        "adaptToDesktop",
+        "getBreakpoint",
+        "isTouchDevice"
+      ],
+      "configuration": {
+        "breakpoints": {
+          "mobile": 480,
+          "tablet": 768,
+          "desktop": 1200
+        },
+        "touchThreshold": 768
+      },
+      "metrics": {
+        "breakpointDistribution": true
+      }
     }
-  ],
-  "version": "1.3.0",
-  "lastUpdated": "2026-02-08",
-  "sddVersion": "1.0.0"
+  },
+
+  "errorHandling": {
+    "strategies": {
+      "API_FORBIDDEN": {
+        "action": "FALLBACK_TO_MOCK",
+        "userMessage": "正在使用模拟数据"
+      },
+      "API_TIMEOUT": {
+        "action": "RETRY_WITH_BACKOFF",
+        "maxRetries": 3,
+        "backoffMs": 2000
+      },
+      "NETWORK_ERROR": {
+        "action": "USE_CACHED_DATA",
+        "cacheMaxAge": 60000
+      },
+      "PARSE_ERROR": {
+        "action": "LOG_AND_FALLBACK",
+        "logLevel": "error"
+      }
+    }
+  },
+
+  "performance": {
+    "targets": {
+      "fcp": "< 1.5s",
+      "lcp": "< 2.5s",
+      "tti": "< 3s",
+      "cls": "< 0.1",
+      "apiLatency": "< 500ms",
+      "cacheHitRate": "> 70%"
+    },
+    "optimizations": [
+      "React.memo for components",
+      "useCallback for callbacks",
+      "useMemo for computed values",
+      "Lazy loading for routes",
+      "Code splitting",
+      "Caching with TTL"
+    ]
+  },
+
+  "testing": {
+    "approaches": [
+      "Unit tests for utilities",
+      "Component tests with React Testing Library",
+      "Integration tests for API services",
+      "E2E tests for critical flows"
+    ],
+    "coverage": {
+      "target": "> 80%",
+      "criticalPaths": "100%"
+    }
+  },
+
+  "deployment": {
+    "environment": "GitHub Codespace",
+    "ports": {
+      "react": 3000,
+      "proxy": 3005
+    },
+    "healthCheck": "/api/health",
+    "buildCommand": "pnpm build",
+    "startCommand": "pnpm start"
+  },
+
+  "documentation": {
+    "readme": "README.md",
+    "designDoc": "SDD_DESIGN_DOCUMENT.md",
+    "errorReport": "COMPLETE_ERROR_REPORT.md",
+    "skills": "skills.json"
+  }
 }

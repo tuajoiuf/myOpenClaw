@@ -9,6 +9,11 @@ export interface Stock {
   volume: number;
   marketCap?: number;
   peRatio?: number;
+  // 额外属性（API返回）
+  open?: number;
+  high?: number;
+  low?: number;
+  preClose?: number;
 }
 
 export interface Sector {
