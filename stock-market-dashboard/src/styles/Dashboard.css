@@ -1,307 +1,113 @@
 /* src/styles/Dashboard.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-body {
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-  min-height: 100vh;
-  background-attachment: fixed;
-  color: #e2e8f0;
-}
-
 .dashboard {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 25px;
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-}
-
-.dashboard::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 20%),
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px, 40px 40px, 30px 30px, 30px 30px;
-  z-index: -1;
-  pointer-events: none;
+  padding: 20px 0;
+  min-height: calc(100vh - 120px);
 }
 
 .dashboard-header {
   text-align: center;
-  margin-bottom: 40px;
-  padding: 35px;
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 20px rgba(37, 99, 235, 0.2);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(79, 70, 229, 0.3);
-  transition: all 0.4s ease;
-}
-
-.dashboard-header:hover {
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 0 30px rgba(37, 99, 235, 0.3);
-  transform: translateY(-2px);
-}
-
-.dashboard-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5px;
-  background: linear-gradient(90deg, #3b82f6, #10b981, #8b5cf6, #f59e0b);
-  animation: gradientShift 3s ease infinite alternate;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  margin-bottom: 30px;
+  padding: 0 20px;
 }
 
 .dashboard-header h1 {
-  margin: 0 0 15px 0;
-  font-size: 2.8em;
-  font-weight: 800;
-  background: linear-gradient(90deg, #60a5fa, #38bdf8, #06b6d4);
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #667eea, #764ba2, #ffd89b);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: -0.5px;
-  text-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
-  font-family: 'Inter', sans-serif;
-  position: relative;
-}
-
-.dashboard-header h1::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #10b981);
-  border-radius: 2px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .last-updated {
-  color: #94a3b8;
-  font-size: 1.1em;
-  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+  color: #a0aec0;
+  margin-top: 10px;
 }
 
 .refresh-indicator {
-  display: inline-block;
-  animation: spin 1.5s linear infinite;
-  transition: transform 0.3s ease;
-  color: #38bdf8;
+  animation: pulse 2s infinite;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .sectors-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 32px;
-  position: relative;
-}
-
-/* 自适应媒体查询 */
-@media (max-width: 1200px) {
-  .sectors-container {
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  }
-}
-
-@media (max-width: 992px) {
-  .sectors-container {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .sectors-container {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 2.2em;
-  }
-  
-  .stocks-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 576px) {
-  .dashboard {
-    padding: 15px;
-  }
-  
-  .dashboard-header {
-    padding: 20px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 1.8em;
-  }
-  
-  .last-updated {
-    font-size: 0.9em;
-  }
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+  padding: 0 20px;
 }
 
 .sector-link {
   text-decoration: none;
-  color: inherit;
   display: block;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
-  z-index: 1;
-  perspective: 1000px;
+  transition: transform 0.3s ease;
 }
 
 .sector-link:hover {
-  transform: translateY(-8px) scale(1.02) rotateX(5deg);
-  z-index: 10;
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.5),
-    0 0 30px rgba(37, 99, 235, 0.3);
+  transform: scale(1.02);
+}
+
+.sector-wrapper {
+  height: 100%;
 }
 
 .loading {
-  text-align: center;
-  font-size: 1.4em;
-  padding: 80px 40px;
-  color: #94a3b8;
-  background: rgba(30, 41, 59, 0.7);
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.8s ease-out;
-  border: 1px solid rgba(79, 70, 229, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #10b981);
-  animation: loadingBar 1.5s ease-in-out infinite;
-}
-
-@keyframes loadingBar {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 18px;
+  color: #a0aec0;
 }
 
 .error {
   text-align: center;
-  font-size: 1.2em;
-  padding: 50px;
-  color: #f87171;
-  background-color: rgba(248, 113, 113, 0.1);
-  border-radius: var(--border-radius);
-  max-width: 600px;
-  margin: 0 auto;
-  border: 1px solid rgba(248, 113, 113, 0.3);
-  backdrop-filter: blur(5px);
+  padding: 40px;
+  font-size: 18px;
+  color: #fc8181;
+  background: rgba(252, 129, 129, 0.1);
+  border-radius: 16px;
+  margin: 20px;
 }
 
+/* 响应式调整 */
 @media (max-width: 768px) {
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+  
   .sectors-container {
     grid-template-columns: 1fr;
-  }
-  
-  .stocks-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 2.2em;
+    gap: 20px;
   }
   
   .dashboard {
-    padding: 15px;
+    padding: 15px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header h1 {
+    font-size: 1.5rem;
   }
   
-  .dashboard-header {
-    padding: 25px;
+  .last-updated {
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.8rem;
   }
   
-  .sector-link:hover {
-    transform: translateY(-4px) scale(1.01) rotateX(2deg);
+  .sectors-container {
+    gap: 15px;
+    padding: 0 10px;
   }
-}
-.market-tag {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.7em;
-  font-weight: bold;
-  z-index: 2;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.market-tag.cn {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  color: white;
-}
-
-.market-tag.us {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: white;
-}
-
-.sector-wrapper {
-  position: relative;
-}
-
-.sector-wrapper {
-  position: relative;
 }

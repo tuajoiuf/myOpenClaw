@@ -1,0 +1,39 @@
+{
+  "skills": [
+    {
+      "id": "stock-api-manager",
+      "name": "Stock API Manager",
+      "version": "1.0.0",
+      "description": "Handles stock data fetching from multiple sources",
+      "path": "skills/stock-api-manager",
+      "dependencies": []
+    },
+    {
+      "id": "stock-data-cache",
+      "name": "Stock Data Cache",
+      "version": "1.0.0",
+      "description": "Intelligent caching for stock data",
+      "path": "skills/stock-data-cache",
+      "dependencies": []
+    },
+    {
+      "id": "stock-error-handler",
+      "name": "Stock Error Handler",
+      "version": "1.0.0",
+      "description": "Comprehensive error handling with fallback",
+      "path": "skills/stock-error-handler",
+      "dependencies": []
+    },
+    {
+      "id": "ui-responsive-adapter",
+      "name": "UI Responsive Adapter",
+      "version": "1.0.0",
+      "description": "Responsive design for H5 and PC",
+      "path": "skills/ui-responsive-adapter",
+      "dependencies": []
+    }
+  ],
+  "version": "1.3.0",
+  "lastUpdated": "2026-02-08",
+  "sddVersion": "1.0.0"
+}

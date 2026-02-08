@@ -1,215 +1,137 @@
 /* src/styles/Favorites.css */
 .favorites-page {
-  padding: 30px;
-  max-width: 1400px;
+  padding: 20px;
+  max-width: 1200px;
   margin: 0 auto;
-  min-height: 100vh;
-  position: relative;
-  z-index: 1;
-}
-
-.favorites-page::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 10% 20%, rgba(147, 51, 234, 0.05) 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 20%),
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 40px 40px, 40px 40px, 25px 25px, 25px 25px;
-  z-index: -1;
-  pointer-events: none;
 }
 
 .page-header {
   text-align: center;
   margin-bottom: 40px;
-  padding: 30px;
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 20px rgba(139, 92, 246, 0.2);
-  border: 1px solid rgba(124, 58, 237, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.page-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5px;
-  background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b);
-  animation: gradientShift 3s ease infinite alternate;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
 }
 
 .page-header h1 {
-  color: #e2e8f0;
+  font-size: 2.5rem;
   margin-bottom: 10px;
-  font-size: 2.5em;
-  font-weight: 800;
-  background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b);
+  background: linear-gradient(45deg, #667eea, #764ba2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-  font-family: 'Inter', sans-serif;
+}
+
+.page-header p {
+  color: #a0aec0;
+  font-size: 1.1rem;
 }
 
 .empty-favorites {
   text-align: center;
-  padding: 60px 40px;
-  background: rgba(30, 41, 59, 0.8);
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(124, 58, 237, 0.2);
-  position: relative;
-  overflow: hidden;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.empty-favorites::before {
-  content: '★';
-  display: block;
-  font-size: 4em;
-  color: #8b5cf6;
-  margin-bottom: 20px;
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .empty-favorites h3 {
-  color: #94a3b8;
-  margin-bottom: 15px;
-  font-size: 1.5em;
-  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.empty-favorites p {
+  color: #a0aec0;
+  font-size: 1rem;
 }
 
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 25px;
-  position: relative;
-  z-index: 1;
 }
 
 .favorite-item {
   position: relative;
-  transition: all 0.3s ease;
-}
-
-.favorite-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 
-    0 15px 30px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(139, 92, 246, 0.3);
 }
 
 .remove-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(231, 76, 60, 0.9);
-  color: white;
-  border: none;
+  top: 10px;
+  right: 10px;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 50%;
   width: 32px;
   height: 32px;
   cursor: pointer;
-  font-size: 1em;
-  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
+  z-index: 10;
 }
 
 .remove-btn:hover {
-  background: rgba(192, 57, 43, 0.9);
+  background: rgba(239, 68, 68, 0.3);
   transform: scale(1.1);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
+/* 响应式调整 */
 @media (max-width: 768px) {
-  .favorites-page {
-    padding: 20px;
-  }
-  
-  .page-header {
-    padding: 25px;
-  }
-  
-  .page-header h1 {
-    font-size: 2em;
-  }
-  
-  .favorites-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .empty-favorites {
-    padding: 40px 25px;
-  }
-  
-  .favorite-item {
-    min-width: auto;
-  }
-}
-
-@media (max-width: 576px) {
   .favorites-page {
     padding: 15px;
   }
   
-  .page-header {
-    padding: 20px;
-  }
-  
   .page-header h1 {
-    font-size: 1.6em;
-  }
-  
-  .remove-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 0.9em;
+    font-size: 2rem;
   }
   
   .empty-favorites {
-    padding: 30px 20px;
-  }
-  
-  .empty-favorites::before {
-    font-size: 3em;
+    padding: 40px 15px;
   }
   
   .empty-favorites h3 {
-    font-size: 1.2em;
+    font-size: 1.3rem;
+  }
+  
+  .favorites-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorites-page {
+    padding: 10px;
+  }
+  
+  .page-header {
+    margin-bottom: 30px;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .page-header p {
+    font-size: 0.9rem;
+  }
+  
+  .empty-favorites {
+    padding: 30px 10px;
+  }
+  
+  .empty-favorites h3 {
+    font-size: 1.1rem;
+  }
+  
+  .empty-favorites p {
+    font-size: 0.9rem;
+  }
+  
+  .favorites-grid {
+    gap: 15px;
   }
 }

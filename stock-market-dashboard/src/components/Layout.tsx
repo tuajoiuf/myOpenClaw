@@ -9,6 +9,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -39,60 +40,62 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate(newPath, { replace: true });
   };
 
+  // 切换移动菜单
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
     <div className="layout">
       <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="nav-brand">
-          <Link to="/">📈 股票板块行情</Link>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          {/* 市场切换按钮 */}
-          <div className="market-switcher" style={{ display: 'flex', gap: '5px' }}>
-            <button 
-              onClick={() => switchMarket('CN')}
-              className={`market-btn ${currentMarket === 'CN' ? 'active' : ''}`}
-              style={{
-                backgroundColor: currentMarket === 'CN' ? 'rgba(37, 99, 235, 0.2)' : 'rgba(31, 41, 55, 0.5)',
-                color: currentMarket === 'CN' ? '#e2e8f0' : '#94a3b8',
-                border: '1px solid rgba(79, 70, 229, 0.3)',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '0.9em',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                fontFamily: "'Inter', sans-serif"
-              }}
-            >
-              A股
-            </button>
-            <button 
-              onClick={() => switchMarket('US')}
-              className={`market-btn ${currentMarket === 'US' ? 'active' : ''}`}
-              style={{
-                backgroundColor: currentMarket === 'US' ? 'rgba(37, 99, 235, 0.2)' : 'rgba(31, 41, 55, 0.5)',
-                color: currentMarket === 'US' ? '#e2e8f0' : '#94a3b8',
-                border: '1px solid rgba(79, 70, 229, 0.3)',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '0.9em',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                fontFamily: "'Inter', sans-serif"
-              }}
-            >
-              美股
-            </button>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="nav-brand">
+              <Link to="/">📈 股票板块行情</Link>
+            </div>
+            
+            {/* 移动端菜单按钮 */}
+            <div className="mobile-menu-toggle" style={{ display: 'none', cursor: 'pointer' }}>
+              <button 
+                onClick={toggleMobileMenu}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'white',
+                  fontSize: '1.5rem',
+                  padding: '5px 10px'
+                }}
+              >
+                ☰
+              </button>
+            </div>
+            
+            <div className="nav-content" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              {/* 市场切换按钮 */}
+              <div className="market-switcher">
+                <button 
+                  onClick={() => switchMarket('CN')}
+                  className={`market-btn ${currentMarket === 'CN' ? 'active' : ''}`}
+                >
+                  A股
+                </button>
+                <button 
+                  onClick={() => switchMarket('US')}
+                  className={`market-btn ${currentMarket === 'US' ? 'active' : ''}`}
+                >
+                  美股
+                </button>
+              </div>
+              
+              <div className="nav-links-container">
+                <ul className="nav-links">
+                  <li><Link to={`/?market=${currentMarket}`}>首页</Link></li>
+                  <li><Link to={`/sectors?market=${currentMarket}`}>板块详情</Link></li>
+                  <li><Link to={`/favorites?market=${currentMarket}`}>自选股票</Link></li>
+                </ul>
+              </div>
+            </div>
           </div>
-          
-          <div className="nav-links-container">
-          <ul className="nav-links">
-            <li><Link to={`/?market=${currentMarket}`}>首页</Link></li>
-            <li><Link to={`/sectors?market=${currentMarket}`}>板块详情</Link></li>
-            <li><Link to={`/favorites?market=${currentMarket}`}>自选股票</Link></li>
-          </ul>
-        </div>
         </div>
       </nav>
       
@@ -101,8 +104,71 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </main>
       
       <footer className="footer">
-        <p>实时股票行情看板 © {new Date().getFullYear()}</p>
+        <div className="container">
+          <p>实时股票行情看板 © {new Date().getFullYear()} | 数据每5秒自动更新</p>
+        </div>
       </footer>
+      
+      {/* 移动端菜单覆盖层 */}
+      {mobileMenuOpen && (
+        <div 
+          className="mobile-menu-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            zIndex: 999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div 
+            className="mobile-menu-content"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '20px',
+              padding: '20px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="market-switcher" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              <button 
+                onClick={() => {
+                  switchMarket('CN');
+                  setMobileMenuOpen(false);
+                }}
+                className={`market-btn ${currentMarket === 'CN' ? 'active' : ''}`}
+              >
+                A股
+              </button>
+              <button 
+                onClick={() => {
+                  switchMarket('US');
+                  setMobileMenuOpen(false);
+                }}
+                className={`market-btn ${currentMarket === 'US' ? 'active' : ''}`}
+              >
+                美股
+              </button>
+            </div>
+            
+            <ul className="nav-links" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+              <li><Link to={`/?market=${currentMarket}`} onClick={() => setMobileMenuOpen(false)}>首页</Link></li>
+              <li><Link to={`/sectors?market=${currentMarket}`} onClick={() => setMobileMenuOpen(false)}>板块详情</Link></li>
+              <li><Link to={`/favorites?market=${currentMarket}`} onClick={() => setMobileMenuOpen(false)}>自选股票</Link></li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

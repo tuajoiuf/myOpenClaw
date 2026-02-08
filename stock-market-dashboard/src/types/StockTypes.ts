@@ -18,14 +18,12 @@ export interface Sector {
   topStocks: Stock[];
 }
 
-export interface Sector {
-  name: string;
-  performance: number;
-  topStocks: Stock[];
-}
-
 export interface SectorPerformance {
   sector: string;
   changePercent: number;
   topStocks: Stock[];
 }
+
+// 为API服务定义类型别名
+export type StockData = Stock;
+export type SectorData = Sector;

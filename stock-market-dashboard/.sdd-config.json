@@ -1,0 +1,114 @@
+{
+  "name": "stock-market-dashboard",
+  "version": "1.0.0",
+  "description": "Real-time stock market dashboard with React, TypeScript, and optimized data fetching",
+  "skills": [
+    {
+      "id": "stock-api-manager",
+      "name": "Stock API Manager",
+      "description": "Handles stock data fetching from multiple sources with caching, error handling, and fallback mechanisms",
+      "type": "service",
+      "methods": [
+        "fetchCNStockData",
+        "fetchUSStockData",
+        "fetchAllSectors",
+        "clearCache"
+      ]
+    },
+    {
+      "id": "stock-data-cache",
+      "name": "Stock Data Cache",
+      "description": "Implements intelligent caching for stock data with configurable TTL",
+      "type": "utility",
+      "methods": [
+        "getCachedData",
+        "setCachedData",
+        "generateCacheKey"
+      ]
+    },
+    {
+      "id": "stock-error-handler",
+      "name": "Stock Error Handler",
+      "description": "Provides comprehensive error handling with fallback to mock data",
+      "type": "utility",
+      "methods": [
+        "handleAPIError",
+        "fallbackToMockData"
+      ]
+    },
+    {
+      "id": "ui-responsive-adapter",
+      "name": "UI Responsive Adapter",
+      "description": "Handles responsive design for H5 and PC platforms",
+      "type": "component",
+      "methods": [
+        "adaptToMobile",
+        "adaptToDesktop"
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": "E_IMPORT_NOT_FOUND",
+      "message": "Export 'getMockStockData' not found in stockDataGenerator",
+      "solution": "Rename export to match import or add missing export",
+      "status": "resolved"
+    },
+    {
+      "code": "E_DUPLICATE_INTERFACE",
+      "message": "Duplicate interface 'Sector' in StockTypes.ts",
+      "solution": "Remove duplicate and merge interfaces",
+      "status": "resolved"
+    },
+    {
+      "code": "E_CIRCULAR_DEPENDENCY",
+      "message": "Circular import between stockApi.ts and stockDataGenerator.ts",
+      "solution": "Remove bidirectional imports, use one-way dependency",
+      "status": "resolved"
+    },
+    {
+      "code": "E_API_FORBIDDEN",
+      "message": "HTTP 403 Forbidden from Sina Finance API",
+      "solution": "Enhanced proxy configuration with proper headers",
+      "status": "mitigated"
+    }
+  ],
+  "iterations": [
+    {
+      "version": "1.0.0",
+      "changes": [
+        "Initial project setup with React and TypeScript",
+        "Implemented basic stock data display",
+        "Added Chinese and US stock support"
+      ],
+      "date": "2026-02-05"
+    },
+    {
+      "version": "1.1.0",
+      "changes": [
+        "Added vercel-react-best-practices skill",
+        "Optimized components with React.memo and useCallback",
+        "Implemented lazy loading for better performance"
+      ],
+      "date": "2026-02-05"
+    },
+    {
+      "version": "1.2.0",
+      "changes": [
+        "Enhanced UI/UX with responsive design",
+        "Added animations and transitions",
+        "Improved mobile compatibility (H5)"
+      ],
+      "date": "2026-02-08"
+    },
+    {
+      "version": "1.3.0",
+      "changes": [
+        "Fixed API errors with multi-source fallback",
+        "Implemented intelligent caching system",
+        "Added comprehensive error handling"
+      ],
+      "date": "2026-02-08"
+    }
+  ]
+}
