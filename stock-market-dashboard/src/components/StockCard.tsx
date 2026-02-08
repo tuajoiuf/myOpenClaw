@@ -1,5 +1,5 @@
 // src/components/StockCard.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import { Stock } from '../types/StockTypes';
 import '../styles/StockCard.css';
 
@@ -7,7 +7,7 @@ interface StockCardProps {
   stock: Stock;
 }
 
-const StockCard: React.FC<StockCardProps> = ({ stock }) => {
+const StockCard: React.FC<StockCardProps> = memo(({ stock }) => {
   const isPositive = stock.change >= 0;
   
   return (
@@ -34,6 +34,6 @@ const StockCard: React.FC<StockCardProps> = ({ stock }) => {
       </div>
     </div>
   );
-};
+});
 
 export default StockCard;

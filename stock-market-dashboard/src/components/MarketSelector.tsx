@@ -1,5 +1,5 @@
 // src/components/MarketSelector.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import '../styles/MarketSelector.css';
 
 interface MarketSelectorProps {
@@ -7,7 +7,7 @@ interface MarketSelectorProps {
   onSelectMarket: (market: 'ALL' | 'CN' | 'US') => void;
 }
 
-const MarketSelector: React.FC<MarketSelectorProps> = ({ selectedMarket, onSelectMarket }) => {
+const MarketSelector: React.FC<MarketSelectorProps> = memo(({ selectedMarket, onSelectMarket }) => {
   return (
     <div className="market-selector">
       <button 
@@ -30,6 +30,6 @@ const MarketSelector: React.FC<MarketSelectorProps> = ({ selectedMarket, onSelec
       </button>
     </div>
   );
-};
+});
 
 export default MarketSelector;

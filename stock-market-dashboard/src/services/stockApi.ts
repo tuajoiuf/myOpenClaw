@@ -52,36 +52,40 @@ const US_SECTOR_STOCKS: Record<string, string[]> = {
 };
 
 /**
- * 将腾讯财经返回的数据解析为StockData对象
+ * 解析新浪股票数据
  */
-export const parseStockData = (dataString: string, market: 'CN' | 'US' = 'CN'): StockData | null => {
+export const parseSinaStockData = (dataString: string, symbol: string, market: 'CN' | 'US' = 'CN'): StockData | null => {
   try {
     const fields = dataString.split(',');
-    
+
     if (fields.length < 32) {
       console.error(`Invalid data string for stock: ${dataString}`);
       return null;
     }
-    
-    const name = fields[0]; // 股票名称（通常是中文名）
+
+    // 新浪财经数据格式:
+    // 0: 股票名字, 1: 今日开盘价, 2: 昨日收盘价, 3: 当前价格, 4: 今日最高价
+    // 5: 今日最低价, 6: 成交股票数, 7: 成交金额, 8: 买一报价, 9: 卖一报价
+    // 10: 买一数量, 11-19: 买二到买五, 20-28: 卖二到卖五, 29: 日期, 30: 时间
+    const name = fields[0]; // 股票名称
     const open = parseFloat(fields[1]); // 开盘价
     const preClose = parseFloat(fields[2]); // 昨收价
     const current = parseFloat(fields[3]); // 当前价
     const high = parseFloat(fields[4]); // 最高价
     const low = parseFloat(fields[5]); // 最低价
-    const volume = parseInt(fields[6]) || 0; // 成交量
-    const amount = parseFloat(fields[7]) || 0; // 成交额
-    const date = fields[30]; // 日期
-    const time = fields[31]; // 时间
-    
+    const volume = parseInt(fields[6]) || 0; // 成交量（股）
+    const amount = parseFloat(fields[7]) || 0; // 成交金额
+    const date = fields[29]; // 日期
+    const time = fields[30]; // 时间
+
     // 计算涨跌额和涨跌幅
     const change = current - preClose;
     const changePercent = preClose ? ((change / preClose) * 100) : 0;
-    
+
     return {
-      symbol: '', // 股票代码会在调用处补充
+      symbol,
       name,
-      chineseName: name, // 腾讯财经API通常直接返回中文名称
+      chineseName: name, // 新浪财经API通常直接返回中文名称
       market,
       price: current,
       change,
@@ -96,6 +100,13 @@ export const parseStockData = (dataString: string, market: 'CN' | 'US' = 'CN'): 
     console.error('Error parsing stock data:', error);
     return null;
   }
+};
+
+/**
+ * 解析腾讯股票数据（兼容原有格式）
+ */
+export const parseStockData = (dataString: string, market: 'CN' | 'US' = 'CN'): StockData | null => {
+  return parseSinaStockData(dataString, '', market); // 使用相同的解析逻辑
 };
 
 /**
@@ -139,9 +150,9 @@ export const fetchCNStockData = async (symbols: string[]): Promise<StockData[]> 
   }
   
   try {
-    // 构建API请求URL
+    // 构建API请求URL - 使用新浪API接口获取股票数据
     const symbolsParam = symbols.join(',');
-    const response = await fetch(`/api/stock/list=${symbolsParam}`, {
+    const response = await fetch(`/api/sina/?list=${symbolsParam}`, {
       headers: {
         'Referer': 'https://finance.sina.com.cn/',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -159,19 +170,19 @@ export const fetchCNStockData = async (symbols: string[]): Promise<StockData[]> 
     
     for (let i = 0; i < symbols.length; i++) {
       const symbol = symbols[i];
-      const line = lines[i];
+      let line = lines[i];
       
-      if (line && line.includes('var hq_str_')) {
-        // 提取股票数据部分
-        const startIndex = line.indexOf('"') + 1;
-        const endIndex = line.lastIndexOf('"');
+      // 处理新浪股票数据格式
+      if (line && line.includes('=')) {
+        // 提取股票数据部分 (例如: var hq_str_sh600000="...";)
+        const regex = /"(.*)"/;
+        const match = line.match(regex);
         
-        if (startIndex > 0 && endIndex > startIndex) {
-          const dataString = line.substring(startIndex, endIndex);
-          const stock = parseStockData(dataString, 'CN'); // 指定为中国市场
+        if (match && match[1]) {
+          const dataString = match[1];
+          const stock = parseSinaStockData(dataString, symbol, 'CN'); // 使用新浪数据解析器
         
           if (stock) {
-            stock.symbol = symbol; // 补充股票代码
             stocks.push(stock);
           }
         }
@@ -365,3 +376,13 @@ const getMockStockData = (symbols: string[], market: 'CN' | 'US'): StockData[] =
 
 // 为了向后兼容，导出原来的函数名
 export { fetchSectorData as fetchSectorDataOld };
+
+/**
+ * 获取中美两市所有板块数据
+ */
+export const fetchAllSectors = async (): Promise<SectorData[]> => {
+  const cnSectors = await fetchCNSectorData();
+  const usSectors = await fetchUSSectorData();
+  
+  return [...cnSectors, ...usSectors];
+};

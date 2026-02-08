@@ -1,5 +1,5 @@
 // src/components/Favorites.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Stock } from '../types/StockTypes';
 import { generateMockStock } from '../utils/stockDataGenerator';
 import StockCard from './StockCard';
@@ -11,23 +11,27 @@ const Favorites: React.FC = () => {
   useEffect(() => {
     // 初始化一些模拟的自选股票
     const mockFavorites = [
-      generateMockStock('AAPL', '苹果公司'),
-      generateMockStock('TSLA', '特斯拉'),
-      generateMockStock('NVDA', '英伟达'),
-      generateMockStock('MSFT', '微软')
+      generateMockStock('AAPL', '苹果公司', 'US'),
+      generateMockStock('TSLA', '特斯拉', 'US'),
+      generateMockStock('NVDA', '英伟达', 'US'),
+      generateMockStock('000001', '平安银行', 'CN'),
+      generateMockStock('600519', '贵州茅台', 'CN')
     ];
     setFavorites(mockFavorites);
   }, []);
 
-  const addToFavorites = (stock: Stock) => {
-    if (!favorites.some(fav => fav.symbol === stock.symbol)) {
-      setFavorites([...favorites, stock]);
-    }
-  };
+  const addToFavorites = useCallback((stock: Stock) => {
+    setFavorites(prevFavorites => {
+      if (!prevFavorites.some(fav => fav.symbol === stock.symbol)) {
+        return [...prevFavorites, stock];
+      }
+      return prevFavorites;
+    });
+  }, []);
 
-  const removeFromFavorites = (symbol: string) => {
-    setFavorites(favorites.filter(stock => stock.symbol !== symbol));
-  };
+  const removeFromFavorites = useCallback((symbol: string) => {
+    setFavorites(prevFavorites => prevFavorites.filter(stock => stock.symbol !== symbol));
+  }, []);
 
   return (
     <div className="favorites-page">
@@ -44,7 +48,7 @@ const Favorites: React.FC = () => {
       ) : (
         <div className="favorites-grid">
           {favorites.map((stock, index) => (
-            <div key={index} className="favorite-item">
+            <div key={`${stock.symbol}-${index}`} className="favorite-item">
               <StockCard stock={stock} />
               <button 
                 className="remove-btn" 
@@ -60,4 +64,4 @@ const Favorites: React.FC = () => {
   );
 };
 
-export default Favorites;
+export default React.memo(Favorites);

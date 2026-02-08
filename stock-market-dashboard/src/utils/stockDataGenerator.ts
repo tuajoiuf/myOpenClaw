@@ -75,15 +75,15 @@ export const generateMockSectors = async (): Promise<Sector[]> => {
 const generateFallbackSectors = (): Sector[] => {
   const sectors = [
     // 中国A股板块
-    { name: '科技', stocks: ['sz300750', 'sz300014', 'sz300498', 'sz300033', 'sh688008', 'sh688111'], market: 'CN' },
-    { name: '金融', stocks: ['sh601318', 'sh601328', 'sh601398', 'sh601939', 'sh601288', 'sh601818'], market: 'CN' },
-    { name: '医疗保健', stocks: ['sz000538', 'sz002422', 'sh600276', 'sh600519', 'sh603259', 'sh600196'], market: 'CN' },
-    { name: '消费', stocks: ['sz000858', 'sh600519', 'sh600887', 'sh600298', 'sh600600', 'sh600885'], market: 'CN' },
+    { name: '科技', stocks: ['sz300750', 'sz300014', 'sz300498', 'sz300033', 'sh688008', 'sh688111'], market: 'CN' as const },
+    { name: '金融', stocks: ['sh601318', 'sh601328', 'sh601398', 'sh601939', 'sh601288', 'sh601818'], market: 'CN' as const },
+    { name: '医疗保健', stocks: ['sz000538', 'sz002422', 'sh600276', 'sh600519', 'sh603259', 'sh600196'], market: 'CN' as const },
+    { name: '消费', stocks: ['sz000858', 'sh600519', 'sh600887', 'sh600298', 'sh600600', 'sh600885'], market: 'CN' as const },
     // 美股板块
-    { name: 'Technology', stocks: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA'], market: 'US' },
-    { name: 'Financials', stocks: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS'], market: 'US' },
-    { name: 'Healthcare', stocks: ['JNJ', 'PFE', 'MRK', 'ABT', 'ABBV', 'UNH'], market: 'US' },
-    { name: 'Consumer Cyclical', stocks: ['AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'DIS'], market: 'US' }
+    { name: 'Technology', stocks: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA'], market: 'US' as const },
+    { name: 'Financials', stocks: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS'], market: 'US' as const },
+    { name: 'Healthcare', stocks: ['JNJ', 'PFE', 'MRK', 'ABT', 'ABBV', 'UNH'], market: 'US' as const },
+    { name: 'Consumer Cyclical', stocks: ['AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'DIS'], market: 'US' as const }
   ];
 
   return sectors.map(sector => {

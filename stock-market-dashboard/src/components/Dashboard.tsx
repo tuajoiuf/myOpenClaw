@@ -1,5 +1,5 @@
 // src/components/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Sector } from '../types/StockTypes';
 import { generateMockSectors, updateStockData } from '../utils/stockDataGenerator';
 import { fetchAllSectors } from '../services/stockApi';
@@ -16,91 +16,100 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'CN' | 'US'>('ALL');
 
+  // 使用useCallback优化数据获取函数
+  const fetchData = useCallback(async () => {
+    try {
+      const sectorsData = await fetchAllSectors(); // 获取中美两国市场数据
+      // 转换数据格式
+      const formattedSectors = sectorsData.map(apiSector => {
+        // 按涨跌幅排序，取前3只股票
+        const sortedStocks = [...apiSector.stocks]
+          .sort((a, b) => b.changePercent - a.changePercent)
+          .slice(0, 3)
+          .map(stock => ({
+            symbol: stock.symbol,
+            name: stock.name,
+            chineseName: stock.chineseName,
+            market: stock.market,
+            price: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            volume: stock.volume,
+            marketCap: stock.marketCap,
+            peRatio: stock.peRatio
+          }));
+        
+        // 计算板块整体表现（前3只股票的平均涨跌幅）
+        const avgChange = sortedStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sortedStocks.length;
+        
+        return {
+          name: apiSector.name,
+          market: apiSector.market,
+          performance: parseFloat(avgChange.toFixed(2)),
+          topStocks: sortedStocks
+        };
+      });
+      
+      setSectors(formattedSectors);
+      setFilteredSectors(formattedSectors); // 初始时显示所有板块
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error fetching sector data:', err);
+      setError('获取数据失败，正在使用模拟数据...');
+      // 即使出错也尝试加载回退数据
+      const fallbackSectors = await generateMockSectors();
+      setSectors(fallbackSectors);
+      setFilteredSectors(fallbackSectors);
+      setIsLoading(false);
+    }
+  }, []);
+
+  // 使用useMemo优化过滤逻辑
+  const filteredSectorsMemo = useMemo(() => {
+    if (selectedMarket === 'ALL') {
+      return sectors;
+    } else {
+      return sectors.filter(sector => sector.market === selectedMarket);
+    }
+  }, [sectors, selectedMarket]);
+
+  // 使用useCallback优化实时更新逻辑
+  const updateSectors = useCallback(() => {
+    setSectors(prevSectors => {
+      return prevSectors.map(sector => {
+        // 更新板块内股票的数据
+        const updatedTopStocks = sector.topStocks.map(stock => updateStockData(stock));
+        
+        // 重新计算板块表现
+        const avgChange = updatedTopStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / updatedTopStocks.length;
+        
+        return {
+          ...sector,
+          performance: parseFloat(avgChange.toFixed(2)),
+          topStocks: updatedTopStocks
+            .sort((a, b) => b.changePercent - a.changePercent)
+            .slice(0, 3) // 保持前3只股票
+        };
+      });
+    });
+    
+    setLastUpdated(new Date());
+  }, []);
+
   // 初始化数据
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const sectorsData = await fetchAllSectors(); // 获取中美两国市场数据
-        // 转换数据格式
-        const formattedSectors = sectorsData.map(apiSector => {
-          // 按涨跌幅排序，取前3只股票
-          const sortedStocks = [...apiSector.stocks]
-            .sort((a, b) => b.changePercent - a.changePercent)
-            .slice(0, 3)
-            .map(stock => ({
-              symbol: stock.symbol,
-              name: stock.name,
-              chineseName: stock.chineseName,
-              market: stock.market,
-              price: stock.price,
-              change: stock.change,
-              changePercent: stock.changePercent,
-              volume: stock.volume,
-              marketCap: stock.marketCap,
-              peRatio: stock.peRatio
-            }));
-          
-          // 计算板块整体表现（前3只股票的平均涨跌幅）
-          const avgChange = sortedStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sortedStocks.length;
-          
-          return {
-            name: apiSector.name,
-            market: apiSector.market,
-            performance: parseFloat(avgChange.toFixed(2)),
-            topStocks: sortedStocks
-          };
-        });
-        
-        setSectors(formattedSectors);
-        setFilteredSectors(formattedSectors); // 初始时显示所有板块
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching sector data:', err);
-        setError('获取数据失败，正在使用模拟数据...');
-        // 即使出错也尝试加载回退数据
-        const fallbackSectors = await generateMockSectors();
-        setSectors(fallbackSectors);
-        setFilteredSectors(fallbackSectors);
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
 
     // 设置定时器模拟实时数据更新
-    const interval = setInterval(() => {
-      setSectors(prevSectors => {
-        return prevSectors.map(sector => {
-          // 更新板块内股票的数据
-          const updatedTopStocks = sector.topStocks.map(stock => updateStockData(stock));
-          
-          // 重新计算板块表现
-          const avgChange = updatedTopStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / updatedTopStocks.length;
-          
-          return {
-            ...sector,
-            performance: parseFloat(avgChange.toFixed(2)),
-            topStocks: updatedTopStocks
-              .sort((a, b) => b.changePercent - a.changePercent)
-              .slice(0, 3) // 保持前3只股票
-          };
-        });
-      });
-      
-      setLastUpdated(new Date());
-    }, 5000); // 每5秒更新一次
+    const interval = setInterval(updateSectors, 5000); // 每5秒更新一次
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchData, updateSectors]);
 
-  // 当市场选择改变时过滤板块
+  // 使用useEffect处理市场过滤
   useEffect(() => {
-    if (selectedMarket === 'ALL') {
-      setFilteredSectors(sectors);
-    } else {
-      setFilteredSectors(sectors.filter(sector => sector.market === selectedMarket));
-    }
-  }, [selectedMarket, sectors]);
+    setFilteredSectors(filteredSectorsMemo);
+  }, [filteredSectorsMemo]);
 
   if (isLoading) {
     return <div className="loading">加载市场数据中...</div>;
@@ -142,4 +151,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default React.memo(Dashboard);

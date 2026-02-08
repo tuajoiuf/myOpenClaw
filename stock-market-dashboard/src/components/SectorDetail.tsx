@@ -1,5 +1,5 @@
 // src/components/SectorDetail.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { generateMockSectors } from '../utils/stockDataGenerator';
 import { fetchAllSectors } from '../services/stockApi';
@@ -16,51 +16,51 @@ const SectorDetail: React.FC = () => {
   // 从URL参数获取市场类型，默认为CN
   const marketFromUrl = searchParams.get('market') as 'CN' | 'US' || 'CN';
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const sectorsData = await fetchAllSectors();
-      // 转换数据格式
-      const formattedSectors = sectorsData.map(apiSector => {
-        // 按涨跌幅排序，取前3只股票
-        const sortedStocks = [...apiSector.stocks]
-          .sort((a, b) => b.changePercent - a.changePercent)
-          .slice(0, 3)
-          .map(stock => ({
-            symbol: stock.symbol,
-            name: stock.name,
-            chineseName: stock.chineseName,
-            market: stock.market,
-            price: stock.price,
-            change: stock.change,
-            changePercent: stock.changePercent,
-            volume: stock.volume,
-            marketCap: stock.marketCap,
-            peRatio: stock.peRatio
-          }));
-        
-        // 计算板块整体表现（前3只股票的平均涨跌幅）
-        const avgChange = sortedStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sortedStocks.length;
-        
-        return {
-          name: apiSector.name,
-          market: apiSector.market,
-          performance: parseFloat(avgChange.toFixed(2)),
-          topStocks: sortedStocks
-        };
-      });
+  const fetchData = useCallback(async () => {
+    const sectorsData = await fetchAllSectors();
+    // 转换数据格式
+    const formattedSectors = sectorsData.map(apiSector => {
+      // 按涨跌幅排序，取前3只股票
+      const sortedStocks = [...apiSector.stocks]
+        .sort((a, b) => b.changePercent - a.changePercent)
+        .slice(0, 3)
+        .map(stock => ({
+          symbol: stock.symbol,
+          name: stock.name,
+          chineseName: stock.chineseName,
+          market: stock.market,
+          price: stock.price,
+          change: stock.change,
+          changePercent: stock.changePercent,
+          volume: stock.volume,
+          marketCap: stock.marketCap,
+          peRatio: stock.peRatio
+        }));
       
-      setAllSectors(formattedSectors);
+      // 计算板块整体表现（前3只股票的平均涨跌幅）
+      const avgChange = sortedStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sortedStocks.length;
       
-      // 查找匹配名称和市场的板块
-      const foundSector = formattedSectors.find(s => 
-        s.name === decodeURIComponent(sectorName || '') && 
-        s.market === marketFromUrl
-      );
-      setSector(foundSector);
-    };
-
-    fetchData();
+      return {
+        name: apiSector.name,
+        market: apiSector.market,
+        performance: parseFloat(avgChange.toFixed(2)),
+        topStocks: sortedStocks
+      };
+    });
+    
+    setAllSectors(formattedSectors);
+    
+    // 查找匹配名称和市场的板块
+    const foundSector = formattedSectors.find(s => 
+      s.name === decodeURIComponent(sectorName || '') && 
+      s.market === marketFromUrl
+    );
+    setSector(foundSector);
   }, [sectorName, marketFromUrl]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (!sector) {
     return <div className="loading">加载板块数据中...</div>;
@@ -121,4 +121,4 @@ const SectorDetail: React.FC = () => {
   );
 };
 
-export default SectorDetail;
+export default React.memo(SectorDetail);

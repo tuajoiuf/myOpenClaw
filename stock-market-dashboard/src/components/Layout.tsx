@@ -1,9 +1,13 @@
 // src/components/Layout.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Layout.css';
 
-const Layout: React.FC = () => {
+interface LayoutProps {
+  children?: ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -93,7 +97,7 @@ const Layout: React.FC = () => {
       </nav>
       
       <main className="main-content">
-        <Outlet />
+        {children || <Outlet />}
       </main>
       
       <footer className="footer">

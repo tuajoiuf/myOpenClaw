@@ -1,5 +1,5 @@
 // src/components/SectorCard.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import { Sector } from '../types/StockTypes';
 import StockCard from './StockCard';
 import '../styles/SectorCard.css';
@@ -8,7 +8,7 @@ interface SectorCardProps {
   sector: Sector;
 }
 
-const SectorCard: React.FC<SectorCardProps> = ({ sector }) => {
+const SectorCard: React.FC<SectorCardProps> = memo(({ sector }) => {
   const isPositive = sector.performance >= 0;
   
   return (
@@ -33,6 +33,6 @@ const SectorCard: React.FC<SectorCardProps> = ({ sector }) => {
       </div>
     </div>
   );
-};
+});
 
 export default SectorCard;
