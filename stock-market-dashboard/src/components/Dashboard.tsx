@@ -6,7 +6,7 @@ import { fetchAllSectors, clearCache } from '../services/stockApi';
 import SectorCard from './SectorCard';
 import MarketSelector from './MarketSelector';
 import { Link } from 'react-router-dom';
-import '../styles/Dashboard.css';
+import '../styles/LuxuryTheme.css';
 
 const Dashboard: React.FC = () => {
   const [sectors, setSectors] = useState<Sector[]>([]);
@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 使用useCallback优化数据获取函数
+  // 数据获取函数
   const fetchData = useCallback(async (showLoading = true) => {
     if (showLoading) {
       setIsLoading(true);
@@ -28,11 +28,9 @@ const Dashboard: React.FC = () => {
     setError(null);
 
     try {
-      const sectorsData = await fetchAllSectors(); // 获取中美两国市场数据
-      // 转换数据格式
+      const sectorsData = await fetchAllSectors();
       const formattedSectors = sectorsData.map(apiSector => {
-        // 按涨跌幅排序，取前3只股票
-        const sortedStocks = [...apiSector.stocks]
+        const sortedStocks = [...apiSector.topStocks]
           .sort((a, b) => b.changePercent - a.changePercent)
           .slice(0, 3)
           .map(stock => ({
@@ -48,7 +46,6 @@ const Dashboard: React.FC = () => {
             peRatio: stock.peRatio
           }));
         
-        // 计算板块整体表现（前3只股票的平均涨跌幅）
         const avgChange = sortedStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sortedStocks.length;
         
         return {
@@ -63,7 +60,6 @@ const Dashboard: React.FC = () => {
     } catch (err) {
       console.error('Error fetching sector data:', err);
       setError('获取数据失败，正在使用模拟数据...');
-      // 即使出错也尝试加载回退数据
       const fallbackSectors = await generateMockSectors();
       setSectors(fallbackSectors);
     } finally {
@@ -72,14 +68,11 @@ const Dashboard: React.FC = () => {
     }
   }, []);
 
-  // 使用useCallback优化实时更新逻辑
+  // 实时更新函数
   const updateSectors = useCallback(() => {
     setSectors(prevSectors => {
       return prevSectors.map(sector => {
-        // 更新板块内股票的数据
         const updatedTopStocks = sector.topStocks.map(stock => updateStockData(stock));
-        
-        // 重新计算板块表现
         const avgChange = updatedTopStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / updatedTopStocks.length;
         
         return {
@@ -87,7 +80,7 @@ const Dashboard: React.FC = () => {
           performance: parseFloat(avgChange.toFixed(2)),
           topStocks: updatedTopStocks
             .sort((a, b) => b.changePercent - a.changePercent)
-            .slice(0, 3) // 保持前3只股票
+            .slice(0, 3)
         };
       });
     });
@@ -99,8 +92,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchData();
 
-    // 设置定时器模拟实时数据更新（降低频率以减少API压力）
-    intervalRef.current = setInterval(updateSectors, 10000); // 每10秒更新一次
+    intervalRef.current = setInterval(updateSectors, 10000);
 
     return () => {
       if (intervalRef.current) {
@@ -109,16 +101,14 @@ const Dashboard: React.FC = () => {
     };
   }, [fetchData, updateSectors]);
 
-  // 使用useMemo优化过滤和排序逻辑
+  // 过滤和排序
   const processedSectors = useMemo(() => {
     let result = sectors;
 
-    // 按市场过滤
     if (selectedMarket !== 'ALL') {
       result = result.filter(sector => sector.market === selectedMarket);
     }
 
-    // 按搜索词过滤
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(sector => 
@@ -131,7 +121,6 @@ const Dashboard: React.FC = () => {
       );
     }
 
-    // 按排序方式排序
     result = [...result].sort((a, b) => {
       let comparison = 0;
       
@@ -152,151 +141,331 @@ const Dashboard: React.FC = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    // 清除缓存以获取最新数据
     clearCache();
     await fetchData(false);
     intervalRef.current = setInterval(updateSectors, 10000);
   };
 
-  // 添加重新尝试获取数据的功能
   const handleRetry = async () => {
     setError(null);
     await fetchData();
   };
 
+  // 加载状态
   if (isLoading && sectors.length === 0) {
     return (
-      <div className="dashboard">
-        <div className="container">
-          <div className="loading">
-            <div className="spinner"></div>
-            <span>加载市场数据中...</span>
-          </div>
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: 'var(--color-dark-gradient)'
+      }}>
+        <div className="luxury-card" style={{ textAlign: 'center', padding: '60px' }}>
+          <div className="animate-shimmer" style={{ 
+            width: '60px', 
+            height: '60px', 
+            borderRadius: '50%', 
+            background: 'var(--color-gold-gradient)',
+            margin: '0 auto 24px'
+          }}></div>
+          <p style={{ color: 'var(--color-text-secondary)' }}>加载市场数据中...</p>
         </div>
       </div>
     );
   }
 
+  // 错误状态
   if (error && sectors.length === 0) {
     return (
-      <div className="dashboard">
-        <div className="container">
-          <div className="error card" style={{ padding: '40px', textAlign: 'center' }}>
-            <h3>⚠️ 数据获取出现问题</h3>
-            <p style={{ margin: '15px 0', color: '#f56565' }}>{error}</p>
-            <div style={{ marginTop: '20px' }}>
-              <button className="btn btn-primary" onClick={handleRetry} style={{ marginRight: '10px' }}>
-                重试连接
-              </button>
-              <button className="btn btn-secondary" onClick={() => clearCache()}>
-                清除缓存
-              </button>
-            </div>
-            <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#a0aec0' }}>
-              正在使用模拟数据以保证应用正常运行
-            </p>
-          </div>
+      <div className="container" style={{ padding: '120px 20px 40px' }}>
+        <div className="luxury-card" style={{ textAlign: 'center', padding: '60px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '24px' }}>⚠️</div>
+          <h3 style={{ 
+            fontFamily: 'var(--font-display)', 
+            fontSize: '1.5rem',
+            marginBottom: '16px'
+          }}>数据获取出现问题</h3>
+          <p style={{ color: 'var(--color-danger)', marginBottom: '24px' }}>{error}</p>
+          <button className="luxury-btn" onClick={handleRetry}>
+            重试连接
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard">
-      <div className="container">
-        <header className="dashboard-header">
-          <h1>股票板块行情实时看板</h1>
-          <div className="last-updated">
-            最后更新: {lastUpdated.toLocaleTimeString()}
-            <span className="refresh-indicator">🔄</span>
+    <div className="dashboard" style={{ 
+      minHeight: '100vh',
+      background: 'var(--color-dark-gradient)',
+      padding: '40px 0'
+    }}>
+      <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px' }}>
+        
+        {/* 标题区域 */}
+        <header style={{ 
+          textAlign: 'center', 
+          marginBottom: '48px',
+          animation: 'fadeInUp 0.6s ease-out'
+        }}>
+          <h1 className="luxury-title" style={{ 
+            fontSize: '2.5rem',
+            marginBottom: '12px',
+            fontFamily: 'var(--font-display)'
+          }}>
+            股票板块行情实时看板
+          </h1>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            gap: '12px',
+            color: 'var(--color-text-secondary)'
+          }}>
+            <span>最后更新: {lastUpdated.toLocaleTimeString()}</span>
+            <span className="animate-pulseGold" style={{ 
+              display: 'inline-block',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: 'var(--color-success)'
+            }}></span>
           </div>
         </header>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '30px' }}>
-          <MarketSelector 
-            selectedMarket={selectedMarket} 
-            onSelectMarket={setSelectedMarket} 
-          />
-          
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <input
-              type="text"
-              placeholder="搜索板块或股票..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                padding: '12px 20px',
-                borderRadius: '50px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                fontSize: '1rem',
-                minWidth: '250px',
-                maxWidth: '400px'
-              }}
-            />
+        {/* 控制区域 */}
+        <div className="luxury-card" style={{ 
+          marginBottom: '48px',
+          animation: 'fadeInUp 0.6s ease-out 0.1s both'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap',
+            gap: '20px', 
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
             
+            {/* 搜索框 */}
+            <div style={{ position: 'relative', flex: '1', maxWidth: '400px', minWidth: '250px' }}>
+              <input
+                type="text"
+                placeholder="搜索板块或股票..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '16px 24px 16px 48px',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(201, 162, 39, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  color: 'white',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'var(--transition-smooth)'
+                }}
+              />
+              <span style={{ 
+                position: 'absolute', 
+                left: '16px', 
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--color-text-muted)'
+              }}>🔍</span>
+            </div>
+            
+            {/* 排序选择 */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'performance' | 'name')}
               style={{
-                padding: '12px 20px',
-                borderRadius: '50px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                background: 'rgba(255, 255, 255, 0.05)',
+                padding: '16px 24px',
+                borderRadius: '16px',
+                border: '1px solid rgba(201, 162, 39, 0.2)',
+                background: 'rgba(255, 255, 255, 0.03)',
                 color: 'white',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                cursor: 'pointer',
+                outline: 'none'
               }}
             >
-              <option value="performance">按涨幅排序</option>
-              <option value="name">按名称排序</option>
+              <option value="performance" style={{ background: 'var(--color-primary)' }}>按涨幅排序</option>
+              <option value="name" style={{ background: 'var(--color-primary)' }}>按名称排序</option>
             </select>
             
+            {/* 排序方向 */}
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
               style={{
-                padding: '12px 20px',
-                borderRadius: '50px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                background: 'rgba(255, 255, 255, 0.05)',
+                padding: '16px 24px',
+                borderRadius: '16px',
+                border: '1px solid rgba(201, 162, 39, 0.2)',
+                background: 'rgba(255, 255, 255, 0.03)',
                 color: 'white',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                cursor: 'pointer',
+                outline: 'none'
               }}
             >
-              <option value="desc">降序</option>
-              <option value="asc">升序</option>
+              <option value="desc" style={{ background: 'var(--color-primary)' }}>⬇️ 降序</option>
+              <option value="asc" style={{ background: 'var(--color-primary)' }}>⬆️ 升序</option>
             </select>
             
+            {/* 市场选择 */}
+            <div className="market-switcher">
+              <button 
+                className={`market-btn ${selectedMarket === 'ALL' ? 'active' : ''}`}
+                onClick={() => setSelectedMarket('ALL')}
+              >
+                🌏 全部
+              </button>
+              <button 
+                className={`market-btn ${selectedMarket === 'CN' ? 'active' : ''}`}
+                onClick={() => setSelectedMarket('CN')}
+              >
+                🇨🇳 A股
+              </button>
+              <button 
+                className={`market-btn ${selectedMarket === 'US' ? 'active' : ''}`}
+                onClick={() => setSelectedMarket('US')}
+              >
+                🇺🇸 美股
+              </button>
+            </div>
+            
+            {/* 刷新按钮 */}
             <button 
-              className="btn btn-secondary" 
+              className="luxury-btn"
               onClick={handleRefresh}
-              title="手动刷新数据"
               disabled={isRefreshing}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               {isRefreshing ? '🔄 刷新中...' : '🔄 刷新'}
             </button>
           </div>
         </div>
         
-        <div className="sectors-container">
+        {/* 板块卡片网格 */}
+        <div style={{ 
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: '32px'
+        }}>
           {processedSectors.map((sector, index) => (
             <Link 
               to={`/sectors/${encodeURIComponent(sector.name)}?market=${sector.market}`} 
-              key={`${sector.name}-${sector.market}-${index}`} 
-              className="sector-link"
+              key={`${sector.name}-${sector.market}-${index}`}
+              style={{ textDecoration: 'none' }}
             >
-              <div className="sector-wrapper">
-                <SectorCard sector={sector} />
+              <div 
+                className="luxury-card animate-fadeInUp"
+                style={{ 
+                  animationDelay: `${0.15 + index * 0.05}s`,
+                  cursor: 'pointer'
+                }}
+              >
+                {/* 板块标题 */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '24px',
+                  paddingBottom: '16px',
+                  borderBottom: '1px solid rgba(201, 162, 39, 0.1)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <h2 style={{ 
+                      fontFamily: 'var(--font-display)',
+                      fontSize: '1.4rem',
+                      fontWeight: '600',
+                      color: 'var(--color-text-primary)',
+                      margin: 0
+                    }}>
+                      {sector.name}
+                    </h2>
+                    <span className={`luxury-badge ${sector.market === 'CN' ? '' : 'gold'}`}>
+                      {sector.market === 'CN' ? '🇨🇳 A股' : '🇺🇸 美股'}
+                    </span>
+                  </div>
+                  <div style={{ 
+                    fontSize: '1.5rem',
+                    fontWeight: '700',
+                    fontFamily: 'var(--font-display)',
+                    color: sector.performance >= 0 ? 'var(--color-success)' : 'var(--color-danger)'
+                  }}>
+                    {sector.performance >= 0 ? '+' : ''}{sector.performance}%
+                  </div>
+                </div>
+                
+                {/* 股票列表 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {sector.topStocks.map((stock, stockIndex) => (
+                    <div 
+                      key={stockIndex}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '16px',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        borderRadius: '12px',
+                        transition: 'var(--transition-fast)'
+                      }}
+                    >
+                      <div>
+                        <div style={{ 
+                          fontWeight: '600', 
+                          fontSize: '1.1rem',
+                          color: 'var(--color-text-primary)'
+                        }}>
+                          {stock.chineseName || stock.name}
+                        </div>
+                        <div style={{ 
+                          fontSize: '0.85rem', 
+                          color: 'var(--color-text-muted)',
+                          marginTop: '4px'
+                        }}>
+                          {stock.symbol}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ 
+                          fontSize: '1.2rem', 
+                          fontWeight: '600',
+                          fontFamily: 'var(--font-display)'
+                        }}>
+                          ${stock.price.toFixed(2)}
+                        </div>
+                        <div style={{ 
+                          fontSize: '0.9rem', 
+                          fontWeight: '500',
+                          color: stock.changePercent >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
+                          marginTop: '4px'
+                        }}>
+                          {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </Link>
           ))}
         </div>
         
+        {/* 空状态 */}
         {processedSectors.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#a0aec0' }}>
-            <h3>未找到匹配的板块</h3>
-            <p>请尝试调整搜索条件或选择不同的市场</p>
+          <div className="luxury-card" style={{ textAlign: 'center', padding: '60px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
+            <h3 style={{ 
+              fontFamily: 'var(--font-display)',
+              marginBottom: '12px'
+            }}>未找到匹配的板块</h3>
+            <p style={{ color: 'var(--color-text-secondary)' }}>
+              请尝试调整搜索条件或选择不同的市场
+            </p>
           </div>
         )}
       </div>

@@ -2,16 +2,34 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './styles/App.css';
+import './styles/LuxuryTheme.css';
 
-// 懒加载组件以优化初始加载性能
+// 懒加载组件
 const Layout = lazy(() => import('./components/Layout'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const SectorDetail = lazy(() => import('./components/SectorDetail'));
 const Favorites = lazy(() => import('./components/Favorites'));
 
-// 加载组件时的占位符
+// 加载占位符
 const LoadingSpinner = () => (
-  <div className="loading">加载中...</div>
+  <div style={{ 
+    minHeight: '100vh', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    background: 'var(--color-dark-gradient)'
+  }}>
+    <div className="luxury-card" style={{ textAlign: 'center', padding: '60px' }}>
+      <div className="animate-shimmer" style={{ 
+        width: '60px', 
+        height: '60px', 
+        borderRadius: '50%', 
+        background: 'var(--color-gold-gradient)',
+        margin: '0 auto 24px'
+      }}></div>
+      <p style={{ color: 'var(--color-text-secondary)' }}>加载中...</p>
+    </div>
+  </div>
 );
 
 function App() {
@@ -20,9 +38,7 @@ function App() {
       <div className="App">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-            <Route path="/" element={
-              <Layout />
-            }>
+            <Route path="/" element={<Layout />}>
               <Route index element={
                 <Suspense fallback={<LoadingSpinner />}>
                   <Dashboard />

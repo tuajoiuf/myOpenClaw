@@ -2,7 +2,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/index.css';
-import './styles/animations.css'; // 引入动画样式
+import './styles/animations.css';
+import './styles/LuxuryTheme.css';
 import App from './App';
 
 const root = ReactDOM.createRoot(
